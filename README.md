@@ -1,5 +1,6 @@
 # Pascal-parser
 <h2>Компилятор языка Pascal на Python с использованием библиотеки pyparsing.</h2>
+Компиляция в Java байт код.
 <p>Типы данных:</p>
 <p>сhar, integer, boolean, одномерные массивы</p>
 <p>Операции:</p>
