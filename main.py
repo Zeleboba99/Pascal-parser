@@ -31,7 +31,7 @@ def main():
             k:=0;
         until (l<2)
         while (i>3) do        
-            a:=k[0]+2;                    
+            a:=k+2;                    
         for (i:=2 to 0 ) do 
             g:=0;
             s:=0;
