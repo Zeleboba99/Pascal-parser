@@ -105,7 +105,7 @@ def _make_parser():
     procedure_decl << pp.Keyword("procedure").suppress() + ident + pp.Optional(LPAR + params + RPAR) + SEMI +\
                         vars_decl + body + SEMI
 
-    function_decl << pp.Keyword("function").suppress() + ident + pp.Optional(LPAR + params + RPAR) + SEMI + \
+    function_decl << pp.Keyword("function").suppress() + ident + pp.Optional(LPAR + params + RPAR) + COLON + type_spec+ SEMI + \
                         vars_decl + body + SEMI
 
     program = pp.Keyword("Program").suppress() + ident + SEMI + vars_decl + body + DOT

@@ -364,18 +364,20 @@ class FunctionDeclNode(ExprNode):
     def __init__(self, proc_name: Tuple[AstNode, ...],
                  # todo make params optional
                  params: Tuple[AstNode, ...],
+                 returning_type: Tuple[AstNode, ...],
                  vars_decl: Tuple[AstNode, ...],
                  stmt_list: Tuple[AstNode, ...],
                  row: Optional[int] = None, line: Optional[int] = None, **props):
         super().__init__(row=row, line=line, **props)
         self.proc_name = proc_name
         self.params = params if params else _empty
+        self.returning_type = returning_type
         self.vars_decl = vars_decl
         self.stmt_list = stmt_list
 
     @property
     def childs(self) -> Tuple[AstNode, ...]:
-        return (self.proc_name,) + (self.params,) + (self.vars_decl,) + (self.stmt_list,)
+        return (self.proc_name,) + (self.params,) + (self.returning_type,) + (self.vars_decl,) + (self.stmt_list,)
 
     def __str__(self) -> str:
         return 'function'

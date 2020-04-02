@@ -9,7 +9,7 @@ def main():
             k, d: integer;
             j: char;
             g, c: array [1 .. 100] of integer;
-        function t(j:integer; k: char);
+        function t(j:integer; k: char):integer;
         var 
             d: integer;
         begin 
@@ -25,13 +25,13 @@ def main():
         BEGIN
         writeln(a, 3, "df", 7+9);
         repeat 
-         k:=2 mod 3;
+            k:=2 mod 3;
             l:=j div 4;
             l:=i+8;
             k:=0;
-        until (l<2)
+        until (l>=2)
         while (i>3) do        
-            a:=k[0]+2;                    
+            a:=k+2;                    
         for (i:=2 to 0 ) do 
             g:=0;
             s:=0;
