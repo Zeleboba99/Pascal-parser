@@ -77,10 +77,8 @@ class BinOp(Enum):
     EQUALS = '=='
     GT = '>'
     LT = '<'
-    BIT_AND = '&'
-    BIT_OR = '|'
-    LOGICAL_AND = '&&'
-    LOGICAL_OR = '||'
+    LOGICAL_AND = 'and'
+    LOGICAL_OR = 'or'
 
 
 class BinOpNode(ExprNode):

@@ -9,21 +9,20 @@ def main():
             k, d: integer;
             j: char;
             g, c: array [1 .. 100] of integer;
-        function t(j:integer; k: char):integer;
-        var 
-            d: integer;
-        begin 
-        a:= 0;   
-        end;
-        procedure t(j:integer; k: char);
-        var 
-            d: integer;
-        begin 
-        a:=78;   
-        end;
+            function t(j:integer; k: char):integer;
+            var 
+                d: integer;
+            begin 
+                a:= 0;   
+            end;
+            procedure t(j:integer; k: char);
+            var 
+                d: integer;
+            begin 
+                a:=78;   
+            end;
             g: integer;
-        BEGIN
-        writeln(a, 3, "df", 7+9);
+        BEGIN        
         repeat 
             k:=2 mod 3;
             l:=j div 4;
@@ -36,17 +35,16 @@ def main():
             g:=0;
             s:=0;
         if (k>2) then
-            begin        
+        begin        
             f:=9;
-            end;
+        end;
         else 
             v:=3;         
         END.            
     '''
 
+
     prog1 = grammar_parser.parse(prog1)
     print(*prog1.tree, sep=os.linesep)
-
-
 if __name__ == "__main__":
     main()

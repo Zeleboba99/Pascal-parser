@@ -29,10 +29,8 @@ def _make_parser():
     ADD, SUB = pp.Literal('+'), pp.Literal('-')
     MUL, DIVISION = pp.Literal('*'), pp.Literal('/')
     MOD, DIV = pp.CaselessKeyword('mod'), pp.CaselessKeyword('div')
-    AND = pp.Literal('&&')
-    OR = pp.Literal('||')
-    BIT_AND = pp.Literal('&')
-    BIT_OR = pp.Literal('|')
+    AND = pp.Literal('and')
+    OR = pp.Literal('or')
     GE, LE, GT, LT = pp.Literal('>='), pp.Literal('<='), pp.Literal('>'), pp.Literal('<')
     NEQUALS, EQUALS = pp.Literal('!='), pp.Literal('==')
     ARRAY = pp.CaselessKeyword("array").suppress()
@@ -108,7 +106,7 @@ def _make_parser():
     function_decl << pp.Keyword("function").suppress() + ident + pp.Optional(LPAR + params + RPAR) + COLON + type_spec+ SEMI + \
                         vars_decl + body + SEMI
 
-    program = pp.Keyword("Program").suppress() + ident + SEMI + vars_decl + body + DOT
+    program = pp.Keyword("Program").suppress() + ident + SEMI + pp.Optional(vars_decl) + body + DOT
 
     start = program.ignore(pp.cStyleComment).ignore(pp.dblSlashComment)  + pp.StringEnd()
 
