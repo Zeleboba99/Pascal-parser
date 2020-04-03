@@ -3,7 +3,7 @@ from contextlib import suppress
 import pyparsing as pp
 from pyparsing import pyparsing_common as ppc
 
-from mel_ast import *
+from nodes import *
 
 
 def _make_parser():

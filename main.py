@@ -1,5 +1,5 @@
 import os
-import mel_parser
+import grammar_parser
 
 
 def main():
@@ -44,7 +44,7 @@ def main():
         END.            
     '''
 
-    prog1 = mel_parser.parse(prog1)
+    prog1 = grammar_parser.parse(prog1)
     print(*prog1.tree, sep=os.linesep)
 
 
