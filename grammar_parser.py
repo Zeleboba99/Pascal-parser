@@ -3,7 +3,7 @@ from contextlib import suppress
 import pyparsing as pp
 from pyparsing import pyparsing_common as ppc
 
-from mel_ast import *
+from nodes import *
 
 
 def _make_parser():
@@ -48,10 +48,10 @@ def _make_parser():
     call = ident + LPAR + pp.Optional(expr + pp.ZeroOrMore(COMMA + expr)) + RPAR
 
     group = (
-        literal |
-        call |
-        ident |
-        LPAR + expr + RPAR
+            literal |
+            call |
+            ident |
+            LPAR + expr + RPAR
     )
 
     mult = pp.Group(group + pp.ZeroOrMore((MUL | DIVISION | MOD | DIV) + group)).setName('bin_op')
@@ -63,38 +63,38 @@ def _make_parser():
 
     expr << (logical_or)
 
-    simple_assign = (ident + ASSIGN.suppress() + expr).setName('assign')
-    #type_arr = ARRAY + LBRACK + num + pp.Literal("..").suppress() + num + RBRACK + OF + type_spec
+    array_ident = ident + LBRACK + literal + RBRACK
+    #simple_assign = ((ident | array_ident) + ASSIGN.suppress() + expr).setName('assign')
+    # type_arr = ARRAY + LBRACK + num + pp.Literal("..").suppress() + num + RBRACK + OF + type_spec
     ident_list = ident + pp.ZeroOrMore(COMMA + ident)
     var_decl = ident_list + COLON + type_spec + SEMI
-    array_decl = ident_list + COLON + ARRAY + LBRACK + literal + pp.Literal("..").suppress() + literal + RBRACK + OF + type_spec + SEMI
+    array_decl = ident_list + COLON + ARRAY + LBRACK + literal + pp.Literal(
+        "..").suppress() + literal + RBRACK + OF + type_spec + SEMI
     vars_decl = VAR + pp.ZeroOrMore(var_decl | procedure_decl | function_decl | array_decl)
 
-
-    assign = ident + ASSIGN.suppress() + expr
+    assign = pp.Optional(array_ident | ident) + ASSIGN.suppress() + pp.Optional(array_ident | expr)
     simple_stmt = assign | call
 
     for_body = stmt | pp.Group(SEMI).setName('stmt_list')
     for_cond = assign + pp.Keyword("to").suppress() + literal
 
-    #todo make LPAR and RPAR optional near condition
+    # todo make LPAR and RPAR optional near condition
     if_ = pp.Keyword("if").suppress() + LPAR + expr + RPAR + pp.Keyword("then").suppress() \
           + stmt + pp.Optional(pp.Keyword("else").suppress() + stmt)
     while_ = pp.Keyword("while").suppress() + LPAR + expr + RPAR + pp.Keyword("do").suppress() + stmt
-    #todo can`t parse SEMI after until
+    # todo can`t parse SEMI after until
     repeat_ = pp.Keyword("repeat").suppress() + stmt_list + pp.Keyword("until").suppress() + LPAR + expr + RPAR
     for_ = pp.Keyword("for").suppress() + LPAR + for_cond + RPAR + pp.Keyword("do").suppress() + for_body
-
 
     comp_op = LBRACE + stmt_list + RBRACE + SEMI
 
     stmt << (
-        if_ |
-        for_ |
-        while_ |
-        repeat_ |
-        comp_op |
-        simple_stmt + SEMI
+            if_ |
+            for_ |
+            while_ |
+            repeat_ |
+            comp_op |
+            simple_stmt + SEMI
     )
 
     stmt_list << (pp.ZeroOrMore(stmt + pp.ZeroOrMore(SEMI)))
@@ -102,23 +102,23 @@ def _make_parser():
     body = LBRACE + stmt_list + RBRACE
     params = pp.ZeroOrMore(ident + pp.ZeroOrMore(COMMA + ident) + COLON + type_spec + SEMI) + \
              (ident + pp.ZeroOrMore(COMMA + ident) + COLON + type_spec)
-    procedure_decl << pp.Keyword("procedure").suppress() + ident + pp.Optional(LPAR + params + RPAR) + SEMI +\
-                        vars_decl + body + SEMI
+    procedure_decl << pp.Keyword("procedure").suppress() + ident + LPAR + pp.ZeroOrMore(params).setDebug() + RPAR + SEMI + \
+    vars_decl + body + SEMI
 
-    function_decl << pp.Keyword("function").suppress() + ident + pp.Optional(LPAR + params + RPAR) + COLON + type_spec+ SEMI + \
-                        vars_decl + body + SEMI
+    function_decl << pp.Keyword("function").suppress() + ident + pp.Optional(
+        LPAR + params + RPAR) + COLON + type_spec + SEMI + \
+    vars_decl + body + SEMI
 
     program = pp.Keyword("Program").suppress() + ident + SEMI + vars_decl + body + DOT
 
-    start = program.ignore(pp.cStyleComment).ignore(pp.dblSlashComment)  + pp.StringEnd()
+    start = program.ignore(pp.cStyleComment).ignore(pp.dblSlashComment) + pp.StringEnd()
 
-
-    def set_parse_action_magic(rule_name: str, parser: pp.ParserElement)->None:
+    def set_parse_action_magic(rule_name: str, parser: pp.ParserElement) -> None:
         if rule_name == rule_name.upper():
             return
         if getattr(parser, 'name', None) and parser.name.isidentifier():
             rule_name = parser.name
-        if rule_name in ('bin_op', ):
+        if rule_name in ('bin_op',):
             def bin_op_parse_action(s, loc, tocs):
                 node = tocs[0]
                 if not isinstance(node, AstNode):
@@ -129,6 +129,7 @@ def _make_parser():
                         secondNode = bin_op_parse_action(s, loc, secondNode)
                     node = BinOpNode(BinOp(tocs[i]), node, secondNode)
                 return node
+
             parser.setParseAction(bin_op_parse_action)
         else:
             cls = ''.join(x.capitalize() for x in rule_name.split('_')) + 'Node'
@@ -137,6 +138,7 @@ def _make_parser():
                 if not inspect.isabstract(cls):
                     def parse_action(s, loc, tocs):
                         return cls(*tocs)
+
                     parser.setParseAction(parse_action)
 
     for var_name, value in locals().copy().items():
@@ -149,8 +151,5 @@ def _make_parser():
 parser = _make_parser()
 
 
-def parse(prog: str)->StmtListNode:
+def parse(prog: str) -> StmtListNode:
     return parser.parseString(str(prog))[0]
-
-
-

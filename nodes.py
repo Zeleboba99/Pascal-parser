@@ -55,13 +55,29 @@ class LiteralNode(ExprNode):
 
 
 class IdentNode(ExprNode):
+    # k,j..
     def __init__(self, name: str,
+
                  row: Optional[int] = None, line: Optional[int] = None, **props):
         super().__init__(row=row, line=line, **props)
         self.name = str(name)
 
     def __str__(self) -> str:
         return str(self.name)
+
+
+class ArrayIdentNode(ExprNode):
+    def __init__(self, name: IdentNode, literal: LiteralNode, row: Optional[int] = None, line: Optional[int] = None, **props):
+        super().__init__(row=row, line=line, **props)
+        self.name = name;
+        self.literal = literal;
+
+    # @property
+    # def childs(self) -> Tuple[IdentNode, LiteralNode]:
+    #     return self.name, self.literal
+
+    def __str__(self) -> str:
+        return '{0} [{1}]'.format(self.name,self.literal)
 
 
 class BinOp(Enum):
@@ -102,6 +118,7 @@ class BinOpNode(ExprNode):
 class StmtNode(ExprNode):
     pass
 
+
 class IdentListNode(StmtNode):
     def __init__(self, *idents: Tuple[IdentNode, ...], row: Optional[int] = None, line: Optional[int] = None, **props):
         super().__init__(row=row, line=line, **props)
@@ -114,10 +131,12 @@ class IdentListNode(StmtNode):
     def __str__(self) -> str:
         return "idents"
 
+
 class TypeSpecNode(StmtNode):
     def __init__(self, name: str, row: Optional[int] = None, line: Optional[int] = None, **props):
         super(TypeSpecNode, self).__init__(row=row, line=line, **props)
         self.name = name
+
     def __str__(self) -> str:
         return self.name
 
@@ -137,7 +156,7 @@ class TypeSpecNode(StmtNode):
 #     def __str__(self) -> str:
 #         return 'var'
 class VarDeclNode(StmtNode):
-    def __init__(self, ident_list: IdentListNode, vars_type: TypeSpecNode,# *vars_list: Tuple[AstNode, ...],
+    def __init__(self, ident_list: IdentListNode, vars_type: TypeSpecNode,  # *vars_list: Tuple[AstNode, ...],
                  row: Optional[int] = None, line: Optional[int] = None, **props):
         super().__init__(row=row, line=line, **props)
         self.ident_list = ident_list
@@ -150,16 +169,16 @@ class VarDeclNode(StmtNode):
     def __str__(self) -> str:
         return 'var_dec'
 
+
 class ArrayDeclNode(StmtNode):
     def __init__(self, name: Tuple[AstNode, ...],
-                 from_: LiteralNode, to_:LiteralNode,  vars_type: TypeSpecNode,
+                 from_: LiteralNode, to_: LiteralNode, vars_type: TypeSpecNode,
                  row: Optional[int] = None, line: Optional[int] = None, **props):
         super().__init__(row=row, line=line, **props)
         self.name = name
-        self.from_=from_
-        self.to_=to_
+        self.from_ = from_
+        self.to_ = to_
         self.vars_type = vars_type
-
 
     @property
     def childs(self) -> Tuple[ExprNode, ...]:
@@ -168,6 +187,7 @@ class ArrayDeclNode(StmtNode):
 
     def __str__(self) -> str:
         return 'arr_decl'
+
 
 class VarsDeclNode(StmtNode):
     def __init__(self, *var_decs: Tuple[VarDeclNode, ...],
@@ -200,14 +220,16 @@ class CallNode(StmtNode):
 
 
 class AssignNode(StmtNode):
-    def __init__(self, var: IdentNode, val: ExprNode,
+    def __init__(self, var,
+                 val: ExprNode,
                  row: Optional[int] = None, line: Optional[int] = None, **props):
         super().__init__(row=row, line=line, **props)
         self.var = var
         self.val = val
 
+    # def childs(self) -> Tuple[IdentNode, ExprNode]:
     @property
-    def childs(self) -> Tuple[IdentNode, ExprNode]:
+    def childs(self):
         return self.var, self.val
 
     def __str__(self) -> str:

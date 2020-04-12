@@ -1,8 +1,18 @@
 import os
-import mel_parser
+import grammar_parser
 
 
 def main():
+    prog2='''
+    Program t;
+    var
+    g : integer;
+    BEGIN
+    a:=1;
+    b[1]:=0;
+    b[1]:=a[0];
+    END.
+    '''
     prog1 = '''
         Program t;
         var                    
@@ -15,7 +25,7 @@ def main():
         begin 
         a:= 0;   
         end;
-        procedure t(j:integer; k: char);
+        procedure t(j:integer);
         var 
             d: integer;
         begin 
@@ -23,6 +33,8 @@ def main():
         end;
             g: integer;
         BEGIN
+        g[0]:=10;
+        g[1]:=c[0];
         writeln(a, 3, "df", 7+9);
         repeat 
             k:=2 mod 3;
@@ -44,7 +56,7 @@ def main():
         END.            
     '''
 
-    prog1 = mel_parser.parse(prog1)
+    prog1 = grammar_parser.parse(prog1)
     print(*prog1.tree, sep=os.linesep)
 
 
