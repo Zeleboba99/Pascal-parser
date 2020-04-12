@@ -67,7 +67,8 @@ class IdentNode(ExprNode):
 
 
 class ArrayIdentNode(ExprNode):
-    def __init__(self, name: IdentNode, literal: LiteralNode, row: Optional[int] = None, line: Optional[int] = None, **props):
+    def __init__(self, name: IdentNode, literal: LiteralNode, row: Optional[int] = None, line: Optional[int] = None,
+                 **props):
         super().__init__(row=row, line=line, **props)
         self.name = name;
         self.literal = literal;
@@ -77,7 +78,7 @@ class ArrayIdentNode(ExprNode):
     #     return self.name, self.literal
 
     def __str__(self) -> str:
-        return '{0} [{1}]'.format(self.name,self.literal)
+        return '{0} [{1}]'.format(self.name, self.literal)
 
 
 class BinOp(Enum):
@@ -362,40 +363,46 @@ class ProgramNode(ExprNode):
 
 
 class ProcedureDeclNode(ExprNode):
-    def __init__(self, proc_name: Tuple[AstNode, ...],
-                 # todo make params optional
-                 params: Tuple[AstNode, ...],
-                 vars_decl: Tuple[AstNode, ...],
-                 stmt_list: Tuple[AstNode, ...],
-                 row: Optional[int] = None, line: Optional[int] = None, **props):
-        super().__init__(row=row, line=line, **props)
-        self.proc_name = proc_name
-        self.params = params if params else _empty
-        self.vars_decl = vars_decl
-        self.stmt_list = stmt_list
+    def __init__(self, *args, **props):
+        super().__init__(row=_empty, line=_empty, **props)
+        self.proc_name = args[0]
+        if(len(args) == 4):
+            self.params = args[1]
+            self.vars_decl = args[2]
+            self.stmt_list = args[3]
+        else:
+            self.params = _empty
+            self.vars_decl = args[1]
+            self.stmt_list = args[2]
 
     @property
     def childs(self) -> Tuple[AstNode, ...]:
         return (self.proc_name,) + (self.params,) + (self.vars_decl,) + (self.stmt_list,)
 
+
     def __str__(self) -> str:
         return 'procedure'
 
-
 class FunctionDeclNode(ExprNode):
-    def __init__(self, proc_name: Tuple[AstNode, ...],
-                 # todo make params optional
-                 params: Tuple[AstNode, ...],
-                 returning_type: Tuple[AstNode, ...],
-                 vars_decl: Tuple[AstNode, ...],
-                 stmt_list: Tuple[AstNode, ...],
-                 row: Optional[int] = None, line: Optional[int] = None, **props):
-        super().__init__(row=row, line=line, **props)
-        self.proc_name = proc_name
-        self.params = params if params else _empty
-        self.returning_type = returning_type
-        self.vars_decl = vars_decl
-        self.stmt_list = stmt_list
+    # def __init__(self, proc_name: Tuple[AstNode, ...],
+    #              params: Tuple[AstNode, ...],
+    #              returning_type: Tuple[AstNode, ...],
+    #              vars_decl: Tuple[AstNode, ...],
+    #              stmt_list: Tuple[AstNode, ...],
+    #              row: Optional[int] = None, line: Optional[int] = None, **props):
+    def __init__(self,*args,**props):
+        super().__init__(row=_empty, line=_empty, **props)
+        self.proc_name = args[0]
+        if (len(args) == 5):
+            self.params = args[1]
+            self.returning_type = args[2]
+            self.vars_decl = args[3]
+            self.stmt_list = args[4]
+        else:
+            self.params = _empty
+            self.returning_type = args[1]
+            self.vars_decl = args[2]
+            self.stmt_list = args[3]
 
     @property
     def childs(self) -> Tuple[AstNode, ...]:

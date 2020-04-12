@@ -7,6 +7,12 @@ def main():
     Program t;
     var
     g : integer;
+    procedure t;
+    var 
+    d: integer;
+    begin 
+    a:=78;   
+    end;
     BEGIN
     a:=1;
     b[1]:=0;
@@ -25,7 +31,7 @@ def main():
         begin 
         a:= 0;   
         end;
-        procedure t(j:integer);
+        procedure t;
         var 
             d: integer;
         begin 

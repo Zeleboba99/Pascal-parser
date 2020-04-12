@@ -45,13 +45,16 @@ def _make_parser():
     procedure_decl = pp.Forward()
     function_decl = pp.Forward()
 
+    array_ident = ident + LBRACK + literal + RBRACK
     call = ident + LPAR + pp.Optional(expr + pp.ZeroOrMore(COMMA + expr)) + RPAR
 
     group = (
             literal |
             call |
+            array_ident |
             ident |
             LPAR + expr + RPAR
+
     )
 
     mult = pp.Group(group + pp.ZeroOrMore((MUL | DIVISION | MOD | DIV) + group)).setName('bin_op')
@@ -63,7 +66,7 @@ def _make_parser():
 
     expr << (logical_or)
 
-    array_ident = ident + LBRACK + literal + RBRACK
+
     #simple_assign = ((ident | array_ident) + ASSIGN.suppress() + expr).setName('assign')
     # type_arr = ARRAY + LBRACK + num + pp.Literal("..").suppress() + num + RBRACK + OF + type_spec
     ident_list = ident + pp.ZeroOrMore(COMMA + ident)
@@ -72,7 +75,7 @@ def _make_parser():
         "..").suppress() + literal + RBRACK + OF + type_spec + SEMI
     vars_decl = VAR + pp.ZeroOrMore(var_decl | procedure_decl | function_decl | array_decl)
 
-    assign = pp.Optional(array_ident | ident) + ASSIGN.suppress() + pp.Optional(array_ident | expr)
+    assign = pp.Optional(array_ident | ident) + ASSIGN.suppress() + expr
     simple_stmt = assign | call
 
     for_body = stmt | pp.Group(SEMI).setName('stmt_list')
@@ -101,9 +104,8 @@ def _make_parser():
 
     body = LBRACE + stmt_list + RBRACE
     params = pp.ZeroOrMore(ident + pp.ZeroOrMore(COMMA + ident) + COLON + type_spec + SEMI) + \
-             (ident + pp.ZeroOrMore(COMMA + ident) + COLON + type_spec)
-    procedure_decl << pp.Keyword("procedure").suppress() + ident + LPAR + pp.ZeroOrMore(params).setDebug() + RPAR + SEMI + \
-    vars_decl + body + SEMI
+    (ident + pp.ZeroOrMore(COMMA + ident) + COLON + type_spec)
+    procedure_decl << pp.Keyword("procedure").suppress() + ident + pp.ZeroOrMore(LPAR + params + RPAR) + SEMI + vars_decl + body + SEMI
 
     function_decl << pp.Keyword("function").suppress() + ident + pp.Optional(
         LPAR + params + RPAR) + COLON + type_spec + SEMI + \
