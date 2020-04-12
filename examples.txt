@@ -1,0 +1,256 @@
+вход 1:
+Program prog1;
+var
+    j: integer;
+BEGIN
+    j:=9;
+END.
+
+выход 1:
+Program
+├ prog1
+├ var
+│ └ var_dec
+│   ├ idents
+│   │ └ j
+│   └ integer
+└ Body
+  └ ...
+    └ :=
+      ├ j
+      └ 9 (int)
+
+вход 2:
+Program prog1;
+var
+    k, d: integer;
+    j: char;
+    g, c: array [1 .. 100] of integer;
+BEGIN
+    while (i>3) do
+        a:=k+2;
+    a:=j mod k;
+    while (i>3) do
+    begin
+        a:=k+2;
+        a:=j mod k;
+    end;
+END.
+
+выход 2:
+Program
+├ prog1
+├ var
+│ ├ var_dec
+│ │ ├ idents
+│ │ │ ├ k
+│ │ │ └ d
+│ │ └ integer
+│ ├ var_dec
+│ │ ├ idents
+│ │ │ └ j
+│ │ └ char
+│ └ arr_decl
+│   ├ integer
+│   ├ idents
+│   │ ├ g
+│   │ └ c
+│   ├ 1 (int)
+│   └ 100 (int)
+└ Body
+  └ ...
+    ├ while
+    │ ├ >
+    │ │ ├ i
+    │ │ └ 3 (int)
+    │ └ :=
+    │   ├ a
+    │   └ +
+    │     ├ k
+    │     └ 2 (int)
+    ├ :=
+    │ ├ a
+    │ └ mod
+    │   ├ j
+    │   └ k
+    └ while
+      ├ >
+      │ ├ i
+      │ └ 3 (int)
+      └ ...
+        ├ :=
+        │ ├ a
+        │ └ +
+        │   ├ k
+        │   └ 2 (int)
+        └ :=
+          ├ a
+          └ mod
+            ├ j
+            └ k
+
+вход 3:
+Program prog1;
+var
+    k, d: integer;
+    function t(j:integer; k: char):integer;
+    var
+        d: integer;
+    begin
+        for (i:=2 to 0 ) do
+            g:=0;
+        s:=0;
+        if (k>2) then
+        begin
+            f:=9;
+            h:=f;
+        end;
+        else
+            v:=3;
+    end;
+BEGIN
+    t(1,3);
+END.
+
+выход 3:
+Program
+├ prog1
+├ var
+│ ├ var_dec
+│ │ ├ idents
+│ │ │ ├ k
+│ │ │ └ d
+│ │ └ integer
+│ └ function
+│   ├ t
+│   ├ params
+│   │ ├ integer
+│   │ ├ k
+│   │ ├ char
+│   │ └ j
+│   ├ integer
+│   ├ var
+│   │ └ var_dec
+│   │   ├ idents
+│   │   │ └ d
+│   │   └ integer
+│   └ Body
+│     └ ...
+│       ├ for
+│       │ ├ :=
+│       │ │ ├ i
+│       │ │ └ 2 (int)
+│       │ ├ 0 (int)
+│       │ └ :=
+│       │   ├ g
+│       │   └ 0 (int)
+│       ├ :=
+│       │ ├ s
+│       │ └ 0 (int)
+│       └ if
+│         ├ >
+│         │ ├ k
+│         │ └ 2 (int)
+│         ├ ...
+│         │ ├ :=
+│         │ │ ├ f
+│         │ │ └ 9 (int)
+│         │ └ :=
+│         │   ├ h
+│         │   └ f
+│         └ :=
+│           ├ v
+│           └ 3 (int)
+└ Body
+  └ ...
+    └ call
+      ├ t
+      ├ 1 (int)
+      └ 3 (int)
+
+вход 4:
+Program prog1;
+var
+    procedure t(j:integer; k: char);
+        var
+            d: integer;
+            procedure j(d: integer);
+            var
+                h:integer;
+            begin
+                d:=h;
+            end;
+        begin
+
+            a:=78;
+        end;
+BEGIN
+    if (k>2 or l<0) then
+    begin
+        f:=9;
+        if (k>2 and h>=0) then
+            f:=4;
+    end;
+END.
+
+выход 4:
+Program
+├ prog1
+├ var
+│ └ procedure
+│   ├ t
+│   ├ params
+│   │ ├ integer
+│   │ ├ k
+│   │ ├ char
+│   │ └ j
+│   ├ var
+│   │ ├ var_dec
+│   │ │ ├ idents
+│   │ │ │ └ d
+│   │ │ └ integer
+│   │ └ procedure
+│   │   ├ j
+│   │   ├ params
+│   │   │ ├ integer
+│   │   │ └ d
+│   │   ├ var
+│   │   │ └ var_dec
+│   │   │   ├ idents
+│   │   │   │ └ h
+│   │   │   └ integer
+│   │   └ Body
+│   │     └ ...
+│   │       └ :=
+│   │         ├ d
+│   │         └ h
+│   └ Body
+│     └ ...
+│       └ :=
+│         ├ a
+│         └ 78 (int)
+└ Body
+  └ ...
+    └ if
+      ├ or
+      │ ├ >
+      │ │ ├ k
+      │ │ └ 2 (int)
+      │ └ <
+      │   ├ l
+      │   └ 0 (int)
+      └ ...
+        ├ :=
+        │ ├ f
+        │ └ 9 (int)
+        └ if
+          ├ and
+          │ ├ >
+          │ │ ├ k
+          │ │ └ 2 (int)
+          │ └ >=
+          │   ├ h
+          │   └ 0 (int)
+          └ :=
+            ├ f
+            └ 4 (int)
