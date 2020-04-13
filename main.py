@@ -1,5 +1,5 @@
 import os
-import grammar_parser
+import grammar
 
 
 def main():
@@ -53,7 +53,7 @@ def main():
         for (i:=2 to 0 ) do 
             g:=0;
             s:=0;
-        if (k>2) then
+        if k>2 then
             begin        
             f:=9;
             end;
@@ -62,7 +62,7 @@ def main():
         END.            
     '''
 
-    prog1 = grammar_parser.parse(prog1)
+    prog1 = grammar.parse(prog1)
     print(*prog1.tree, sep=os.linesep)
 
 
