@@ -1,5 +1,5 @@
 import os
-import grammar
+from grammar import *
 
 
 def main():
@@ -63,7 +63,8 @@ def main():
         END.            
     '''
 
-    prog1 = grammar.parse(prog1)
+    g = PascalGrammar()
+    prog1 = g.parse(prog1)
     print(*prog1.tree, sep=os.linesep)
 
 
