@@ -254,3 +254,177 @@ Program
           └ :=
             ├ f
             └ 4 (int)
+
+вход 5:
+Program t;
+var
+    k, d: integer;
+    j: char;
+    g, c: array [1 .. 100] of integer;
+function t(j:integer; k: char):integer;
+var
+    d: integer;
+begin
+a:= 0;
+end;
+procedure t;
+var
+    d: integer;
+begin
+a:=78;
+end;
+    g: integer;
+BEGIN
+g[0]:=10;
+g[1]:=c[0];
+writeln(a, 3, "df", 7+9);
+for ( i:=2 to 10  ) do
+begin
+    k:=2 mod 3;
+    l:=j div 4;
+    l:=i+8;
+    k:=0;
+end;
+while (i>3) do
+    a:=k+2;
+for (i:=2 to 6 ) do
+    g:=0;
+    s:=0;
+if (k>2 and j>=2) then
+    begin
+    f:=9;
+    end;
+else
+    v:=3;
+END.
+
+выход 5:
+Program
+├ t
+├ var
+│ ├ var_dec
+│ │ ├ idents
+│ │ │ ├ k
+│ │ │ └ d
+│ │ └ integer
+│ ├ var_dec
+│ │ ├ idents
+│ │ │ └ j
+│ │ └ char
+│ ├ arr_decl
+│ │ ├ integer
+│ │ ├ idents
+│ │ │ ├ g
+│ │ │ └ c
+│ │ ├ 1 (int)
+│ │ └ 100 (int)
+│ ├ function
+│ │ ├ t
+│ │ ├ params
+│ │ │ ├ integer
+│ │ │ ├ k
+│ │ │ ├ char
+│ │ │ └ j
+│ │ ├ integer
+│ │ ├ var
+│ │ │ └ var_dec
+│ │ │   ├ idents
+│ │ │   │ └ d
+│ │ │   └ integer
+│ │ └ Body
+│ │   └ ...
+│ │     └ :=
+│ │       ├ a
+│ │       └ 0 (int)
+│ ├ procedure
+│ │ ├ t
+│ │ ├ ...
+│ │ ├ var
+│ │ │ └ var_dec
+│ │ │   ├ idents
+│ │ │   │ └ d
+│ │ │   └ integer
+│ │ └ Body
+│ │   └ ...
+│ │     └ :=
+│ │       ├ a
+│ │       └ 78 (int)
+│ └ var_dec
+│   ├ idents
+│   │ └ g
+│   └ integer
+└ Body
+  └ ...
+    ├ :=
+    │ ├ g [0 (int)]
+    │ └ 10 (int)
+    ├ :=
+    │ ├ g [1 (int)]
+    │ └ c [0 (int)]
+    ├ call
+    │ ├ writeln
+    │ ├ a
+    │ ├ 3 (int)
+    │ ├ "df" (str)
+    │ └ +
+    │   ├ 7 (int)
+    │   └ 9 (int)
+    ├ for
+    │ ├ :=
+    │ │ ├ i
+    │ │ └ 2 (int)
+    │ ├ 10 (int)
+    │ └ ...
+    │   ├ :=
+    │   │ ├ k
+    │   │ └ mod
+    │   │   ├ 2 (int)
+    │   │   └ 3 (int)
+    │   ├ :=
+    │   │ ├ l
+    │   │ └ div
+    │   │   ├ j
+    │   │   └ 4 (int)
+    │   ├ :=
+    │   │ ├ l
+    │   │ └ +
+    │   │   ├ i
+    │   │   └ 8 (int)
+    │   └ :=
+    │     ├ k
+    │     └ 0 (int)
+    ├ while
+    │ ├ >
+    │ │ ├ i
+    │ │ └ 3 (int)
+    │ └ :=
+    │   ├ a
+    │   └ +
+    │     ├ k
+    │     └ 2 (int)
+    ├ for
+    │ ├ :=
+    │ │ ├ i
+    │ │ └ 2 (int)
+    │ ├ 6 (int)
+    │ └ :=
+    │   ├ g
+    │   └ 0 (int)
+    ├ :=
+    │ ├ s
+    │ └ 0 (int)
+    └ if
+      ├ and
+      │ ├ >
+      │ │ ├ k
+      │ │ └ 2 (int)
+      │ └ >=
+      │   ├ j
+      │   └ 2 (int)
+      ├ ...
+      │ └ :=
+      │   ├ f
+      │   └ 9 (int)
+      └ :=
+        ├ v
+        └ 3 (int)

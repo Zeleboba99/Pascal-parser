@@ -42,18 +42,19 @@ def main():
         g[0]:=10;
         g[1]:=c[0];
         writeln(a, 3, "df", 7+9);
-        repeat 
+        for ( i:=2 to 10  ) do
+        begin
             k:=2 mod 3;
             l:=j div 4;
             l:=i+8;
             k:=0;
-        until (l>=2)
+        end;
         while (i>3) do        
             a:=k+2;                    
-        for (i:=2 to 0 ) do 
+        for (i:=2 to 6 ) do 
             g:=0;
             s:=0;
-        if k>2 then
+        if (k>2 and j>=2) then
             begin        
             f:=9;
             end;
