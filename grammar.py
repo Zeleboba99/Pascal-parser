@@ -4,7 +4,7 @@ import pyparsing as pp
 from pyparsing import pyparsing_common as ppc
 from myParser import *
 
-
+# Класс описывающий грамматику языка Pascal
 class PascalGrammar:
     def __init__(self):
         self.parser = self._make_parser()

@@ -3,7 +3,8 @@ from typing import Callable, Tuple, Optional, Union
 from enum import Enum
 import inspect
 
-
+# Абстрактный класс - узел AST-дерева
+# Все рализованные далее классы узлов являются потомками этого класса
 class AstNode(ABC):
     def __init__(self, row: Optional[int] = None, line: Optional[int] = None, **props):
         super().__init__()
@@ -42,7 +43,7 @@ class AstNode(ABC):
 class ExprNode(AstNode):
     pass
 
-
+# Узел содержащий значение переменной и ее типа
 class LiteralNode(ExprNode):
     def __init__(self, literal: str,
                  row: Optional[int] = None, line: Optional[int] = None, **props):
@@ -54,6 +55,7 @@ class LiteralNode(ExprNode):
         return '{0} ({1})'.format(self.literal, type(self.value).__name__)
 
 
+# Узел содержащий название переменной
 class IdentNode(ExprNode):
     # k,j..
     def __init__(self, name: str,
@@ -66,6 +68,7 @@ class IdentNode(ExprNode):
         return str(self.name)
 
 
+# Узел содержащий элементы массива
 class ArrayIdentNode(ExprNode):
     def __init__(self, name: IdentNode, literal: LiteralNode, row: Optional[int] = None, line: Optional[int] = None,
                  **props):
@@ -80,7 +83,7 @@ class ArrayIdentNode(ExprNode):
     def __str__(self) -> str:
         return '{0} [{1}]'.format(self.name, self.literal)
 
-
+# Перечисление содержащее символы для бинарных операций
 class BinOp(Enum):
     ADD = '+'
     SUB = '-'
@@ -97,7 +100,7 @@ class BinOp(Enum):
     LOGICAL_AND = 'and'
     LOGICAL_OR = 'or'
 
-
+# Узел реализующий бинарную операцию
 class BinOpNode(ExprNode):
     def __init__(self, op: BinOp, arg1: ExprNode, arg2: ExprNode,
                  row: Optional[int] = None, line: Optional[int] = None, **props):
@@ -117,7 +120,7 @@ class BinOpNode(ExprNode):
 class StmtNode(ExprNode):
     pass
 
-
+# Узел содержащий список переменных определенного типа
 class IdentListNode(StmtNode):
     def __init__(self, *idents: Tuple[IdentNode, ...], row: Optional[int] = None, line: Optional[int] = None, **props):
         super().__init__(row=row, line=line, **props)
@@ -130,7 +133,7 @@ class IdentListNode(StmtNode):
     def __str__(self) -> str:
         return "idents"
 
-
+# Узел содержащий тип переменной или списка переменных
 class TypeSpecNode(StmtNode):
     def __init__(self, name: str, row: Optional[int] = None, line: Optional[int] = None, **props):
         super(TypeSpecNode, self).__init__(row=row, line=line, **props)
@@ -140,20 +143,6 @@ class TypeSpecNode(StmtNode):
         return self.name
 
 
-# class VarsDeclNode(StmtNode):
-#     def __init__(self, vars_type: TypeSpecNode, *vars_list: Tuple[AstNode, ...],
-#                  row: Optional[int] = None, line: Optional[int] = None, **props):
-#         super().__init__(row=row, line=line, **props)
-#         self.vars_type = vars_type
-#         self.vars_list = vars_list
-#
-#     @property
-#     def childs(self) -> Tuple[ExprNode, ...]:
-#         # return self.vars_type, (*self.vars_list)
-#         return (self.vars_type,) + self.vars_list
-#
-#     def __str__(self) -> str:
-#         return 'var'
 class VarDeclNode(StmtNode):
     def __init__(self, ident_list: IdentListNode, vars_type: TypeSpecNode,  # *vars_list: Tuple[AstNode, ...],
                  row: Optional[int] = None, line: Optional[int] = None, **props):
@@ -168,7 +157,11 @@ class VarDeclNode(StmtNode):
     def __str__(self) -> str:
         return 'var_dec'
 
-
+# Узел реализующий объявление массива, переменную, размерность и тип
+# name идентификатор массива
+# from_ индекс первого элемента массива
+# to_ индекс последнего элемента массива
+# vars_type тип к которому относится массив
 class ArrayDeclNode(StmtNode):
     def __init__(self, name: Tuple[AstNode, ...],
                  from_: LiteralNode, to_: LiteralNode, vars_type: TypeSpecNode,
@@ -187,7 +180,7 @@ class ArrayDeclNode(StmtNode):
     def __str__(self) -> str:
         return 'arr_decl'
 
-
+# Узел реализующий раздел описания переменных
 class VarsDeclNode(StmtNode):
     def __init__(self, *var_decs: Tuple[VarDeclNode, ...],
                  row: Optional[int] = None, line: Optional[int] = None, **props):
@@ -201,7 +194,7 @@ class VarsDeclNode(StmtNode):
     def __str__(self) -> str:
         return 'var'
 
-
+# Узел реализующий вызов функций или процедур
 class CallNode(StmtNode):
     def __init__(self, func: IdentNode, *params: Tuple[ExprNode],
                  row: Optional[int] = None, line: Optional[int] = None, **props):
@@ -217,7 +210,7 @@ class CallNode(StmtNode):
     def __str__(self) -> str:
         return 'call'
 
-
+# Узел реализующий операцию присваивания переменной var значения val
 class AssignNode(StmtNode):
     def __init__(self, var,
                  val: ExprNode,
@@ -234,7 +227,10 @@ class AssignNode(StmtNode):
     def __str__(self) -> str:
         return ':='
 
-
+# Узел реализующий условный оператор if
+# cond логическое выражение внутри if
+# then_stmt выражение выполняющееся при true в cond
+# else_stmt выражение выполняющееся при false в cond
 class IfNode(StmtNode):
     def __init__(self, cond: ExprNode, then_stmt: StmtNode, else_stmt: Optional[StmtNode] = None,
                  row: Optional[int] = None, line: Optional[int] = None, **props):
@@ -250,7 +246,9 @@ class IfNode(StmtNode):
     def __str__(self) -> str:
         return 'if'
 
-
+# Узел реализующий цикл while
+# cond логическое выражение внутри while
+# stmt_list операторы в теле цикла
 class WhileNode(StmtNode):
     def __init__(self, cond: ExprNode, stmt_list: StmtNode,
                  row: Optional[int] = None, line: Optional[int] = None, **props):
@@ -265,7 +263,7 @@ class WhileNode(StmtNode):
     def __str__(self) -> str:
         return 'while'
 
-
+# в данный момент в разработке
 class RepeatNode(StmtNode):
     def __init__(self, stmt_list: StmtNode, cond: ExprNode,
                  row: Optional[int] = None, line: Optional[int] = None, **props):
@@ -280,7 +278,10 @@ class RepeatNode(StmtNode):
     def __str__(self) -> str:
         return 'repeat'
 
-
+# Узел описывающий цикл с параметром for
+# init начальное значение
+# to конечное значение
+# body оператор в теле цикла
 class ForNode(StmtNode):
     def __init__(self, init: Union[StmtNode, None],
                  to,
@@ -298,7 +299,7 @@ class ForNode(StmtNode):
     def __str__(self) -> str:
         return 'for'
 
-
+# Узел содержащий список выражений
 class StmtListNode(StmtNode):
     def __init__(self, *exprs: StmtNode,
                  row: Optional[int] = None, line: Optional[int] = None, **props):
@@ -312,7 +313,7 @@ class StmtListNode(StmtNode):
     def __str__(self) -> str:
         return '...'
 
-
+# Узел являющийся телом (внутренности между begin и end) содержащий список выражений
 class BodyNode(ExprNode):
     def __init__(self, body: Tuple[StmtNode, ...],
                  row: Optional[int] = None, line: Optional[int] = None, **props):
@@ -326,7 +327,7 @@ class BodyNode(ExprNode):
     def __str__(self) -> str:
         return 'Body'
 
-
+# Узел содержащий параметры функции, процедуры
 class ParamsNode(StmtNode):
     def __init__(self, vars_type: TypeSpecNode, *vars_list: Tuple[AstNode, ...],
                  row: Optional[int] = None, line: Optional[int] = None, **props):
@@ -342,7 +343,10 @@ class ParamsNode(StmtNode):
     def __str__(self) -> str:
         return 'params'
 
-
+# Узел описывающий программу
+# prog_name название программы
+# vars_decl раздел описаний
+# stmt_list тело программы
 class ProgramNode(ExprNode):
     def __init__(self, prog_name: Tuple[AstNode, ...], vars_decl: Tuple[AstNode, ...],
                  stmt_list: Tuple[AstNode, ...],
@@ -359,7 +363,8 @@ class ProgramNode(ExprNode):
     def __str__(self) -> str:
         return 'Program'
 
-
+# Узел содержщий объявление процедуры
+# число параметров *args зависит от того, объявили мы процедуру с параметрами или без
 class ProcedureDeclNode(ExprNode):
     def __init__(self, *args, **props):
         super().__init__(row=_empty, line=_empty, **props)
@@ -381,13 +386,10 @@ class ProcedureDeclNode(ExprNode):
     def __str__(self) -> str:
         return 'procedure'
 
+
+# Узел содержщий объявление функции
+# число параметров *args зависит от того, объявили мы функцию с параметрами или без
 class FunctionDeclNode(ExprNode):
-    # def __init__(self, proc_name: Tuple[AstNode, ...],
-    #              params: Tuple[AstNode, ...],
-    #              returning_type: Tuple[AstNode, ...],
-    #              vars_decl: Tuple[AstNode, ...],
-    #              stmt_list: Tuple[AstNode, ...],
-    #              row: Optional[int] = None, line: Optional[int] = None, **props):
     def __init__(self,*args,**props):
         super().__init__(row=_empty, line=_empty, **props)
         self.proc_name = args[0]
