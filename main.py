@@ -1,5 +1,6 @@
 import os
 from grammar import *
+from semantic import *
 
 
 def main():
@@ -63,9 +64,38 @@ def main():
         END.            
     '''
 
+    prog2 = '''Program prog1;
+var x, y, i: integer;
+procedure Alpha(a: integer);
+    var y: integer;
+begin 
+x:=x+1+y;
+end;
+BEGIN
+y:=9;
+x:=3+y-1;
+while (y>=5) do
+begin
+    y:=y+1;
+    y:=y+1;
+end;
+for (i:=2 to 6 ) do
+begin
+    x:=0;
+    y:=0;
+end;
+if (y>1) then 
+    if (x>1) then
+        x:=1;  
+else
+    x:=2;
+END.'''
     g = PascalGrammar()
-    prog1 = g.parse(prog1)
-    print(*prog1.tree, sep=os.linesep)
+    prog2 = g.parse(prog2)
+    print(*prog2.tree, sep=os.linesep)
+    symb_table_builder = SemanticAnalyzer()
+    symb_table_builder.visit(prog2)
+
 
 
 if __name__ == "__main__":

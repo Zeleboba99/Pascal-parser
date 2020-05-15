@@ -58,9 +58,7 @@ class LiteralNode(ExprNode):
 # Узел содержащий название переменной
 class IdentNode(ExprNode):
     # k,j..
-    def __init__(self, name: str,
-
-                 row: Optional[int] = None, line: Optional[int] = None, **props):
+    def __init__(self, name: str, row: Optional[int] = None, line: Optional[int] = None, **props):
         super().__init__(row=row, line=line, **props)
         self.name = str(name)
 
@@ -328,8 +326,9 @@ class BodyNode(ExprNode):
         return 'Body'
 
 # Узел содержащий параметры функции, процедуры
+#TODO переделать, параметры считываются неправильно
 class ParamsNode(StmtNode):
-    def __init__(self, vars_type: TypeSpecNode, *vars_list: Tuple[AstNode, ...],
+    def __init__(self, vars_list: TypeSpecNode, *vars_type: Tuple[AstNode, ...],
                  row: Optional[int] = None, line: Optional[int] = None, **props):
         super().__init__(row=row, line=line, **props)
         self.vars_type = vars_type if vars_type else _empty
@@ -338,7 +337,7 @@ class ParamsNode(StmtNode):
     @property
     def childs(self) -> Tuple[ExprNode, ...]:
         # return self.vars_type, (*self.vars_list)
-        return self.vars_list + (self.vars_type,)
+        return (self.vars_list,) + self.vars_type
 
     def __str__(self) -> str:
         return 'params'
