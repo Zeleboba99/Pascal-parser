@@ -9,7 +9,10 @@ def main():
     var
     g : integer;
     c : boolean;
+    a : char;
+    d: array [1 .. 100] of integer;
     BEGIN
+    a:='a';
     g:=1;
     g:=g+1;
     c:=True;

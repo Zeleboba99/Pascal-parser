@@ -11,7 +11,8 @@ class PascalGrammar:
 
     def _make_parser(self):
         num = pp.Regex('[+-]?\\d+\\.?\\d*([eE][+-]?\\d+)?')
-        str_ = pp.QuotedString('"', escChar='\\', unquoteResults=False, convertWhitespaceEscapes=False)
+        str_ = pp.QuotedString("'", escChar='\\', unquoteResults=False, convertWhitespaceEscapes=False)
+        char_val = pp.QuotedString('\'')
         TRUE = pp.Literal('True')
         FALSE = pp.Literal('False')
         bool_val = FALSE | TRUE
