@@ -113,6 +113,26 @@ class SemanticAnalyzer(NodeVisitor):
                     "Duplicate identifier '%s' found" % var_name
                 )
             self.current_scope.define(var_symbol)
+    def visit_ArrayDeclNode(self, node: ArrayDeclNode):
+        type = node.vars_type
+        from_ = node.from_.literal
+        to_ = node.to_.literal
+        for ident in node.name.idents:
+            arr_name = ident.name
+            arr_symb = ArraySymbol(arr_name,type,from_,to_)
+            if self.current_scope.lookup(arr_name,current_scope_only=True):
+                raise Exception(
+                    "Duplicate identifier '%s' found" % arr_name
+                )
+            self.current_scope.define(arr_symb)
+
+    def visit_ArrayIdentNode(self, node : ArrayIdentNode):
+        arr_name = node.name.name
+        liter = int(node.literal.literal)
+        arr_symbol : ArraySymbol = self.current_scope.lookup(arr_name)
+        if(liter < int(arr_symbol.from_) or liter > int(arr_symbol.to_)):
+            raise Exception("Out of range '%s'" % liter)
+
 
     def visit_BodyNode(self, node: BodyNode):
         self.visit(node.body)
@@ -122,14 +142,21 @@ class SemanticAnalyzer(NodeVisitor):
             self.visit(stmt)
 
     def visit_AssignNode(self, node: AssignNode):
-        var_name = node.var.name
+        var = node.var
+        visit = None
+        if(isinstance(var,ArrayIdentNode)):
+            var_name = var.name.name
+            visit = var
+        else:
+            var_name = var.name
+            visit = node.val
         var_symbol = self.current_scope.lookup(var_name)
         if var_symbol is None:
             #raise NameError(var_name)
             raise Exception(
                 "Undefined variable '%s' found" % var_name
             )
-        self.visit(node.val)
+        self.visit(visit)
 
     def visit_ProcedureDeclNode(self, node: ProcedureDeclNode):
         proc_name = node.proc_name

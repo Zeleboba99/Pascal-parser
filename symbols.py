@@ -12,6 +12,13 @@ class BuiltinTypeSymbol(Symbol):
     def __str__(self):
         return self.name
 
+class ArraySymbol(Symbol):
+    def __init__(self,name,type, from_ , to_):
+        super().__init__(name,type)
+        self.from_ = from_
+        self.to_ = to_
+    def __str__(self):
+        return '<{name}:{type}[{from_} .. {to_}]>'.format(name = self.name, type = self.type, from_ = self.from_, to_ = self.to_)
 
 class VarSymbol(Symbol):
     def __init__(self, name, type):
