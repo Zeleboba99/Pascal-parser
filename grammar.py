@@ -12,7 +12,10 @@ class PascalGrammar:
     def _make_parser(self):
         num = pp.Regex('[+-]?\\d+\\.?\\d*([eE][+-]?\\d+)?')
         str_ = pp.QuotedString('"', escChar='\\', unquoteResults=False, convertWhitespaceEscapes=False)
-        literal = num | str_
+        TRUE = pp.Literal('True')
+        FALSE = pp.Literal('False')
+        bool_val = FALSE | TRUE
+        literal = num | str_ | bool_val
         ident = ppc.identifier.setName('ident')
 
         INT = pp.CaselessKeyword("integer")
@@ -48,6 +51,7 @@ class PascalGrammar:
 
         array_ident = ident + LBRACK + literal + RBRACK
         call = ident + LPAR + pp.Optional(expr + pp.ZeroOrMore(COMMA + expr)) + RPAR
+
 
         group = (
                 literal |

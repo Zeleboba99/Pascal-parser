@@ -45,6 +45,7 @@ class ScopedSymbolTable(object):
     def init_builtins(self):
         self.define(BuiltinTypeSymbol('integer'))
         self.define(BuiltinTypeSymbol('char'))
+        self.define(BuiltinTypeSymbol('boolean'))
 
     def define(self, symbol: Symbol):
         print('Define: %s' % symbol)
@@ -78,7 +79,7 @@ class SemanticAnalyzer(NodeVisitor):
         var_name = node.name
         var_symbol = self.current_scope.lookup(var_name)
         if var_symbol is None:
-            raise Exception("Error: Symbol(identifier) not found '%s'" % var_name)
+            raise Exception("Symbol(identifier) not found '%s'" % var_name)
 
     def visit_LiteralNode(self, node: LiteralNode):
         pass
@@ -109,7 +110,7 @@ class SemanticAnalyzer(NodeVisitor):
             #only for current scope
             if self.current_scope.lookup(var_name, current_scope_only=True):
                 raise Exception(
-                    "Error: Duplicate identifier '%s' found" % var_name
+                    "Duplicate identifier '%s' found" % var_name
                 )
             self.current_scope.define(var_symbol)
 
@@ -124,7 +125,10 @@ class SemanticAnalyzer(NodeVisitor):
         var_name = node.var.name
         var_symbol = self.current_scope.lookup(var_name)
         if var_symbol is None:
-            raise NameError(var_name)
+            #raise NameError(var_name)
+            raise Exception(
+                "Undefined variable '%s' found" % var_name
+            )
         self.visit(node.val)
 
     def visit_ProcedureDeclNode(self, node: ProcedureDeclNode):

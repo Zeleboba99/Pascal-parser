@@ -4,20 +4,16 @@ from semantic import *
 
 
 def main():
-    prog2='''
+    prog3='''
     Program t;
     var
     g : integer;
-    procedure t;
-    var 
-    d: integer;
-    begin 
-    a:=78;   
-    end;
+    c : boolean;
     BEGIN
-    a:=1;
-    b[1]:=0;
-    b[1]:=a[0];
+    g:=1;
+    g:=g+1;
+    c:=True;
+    c:=False;
     END.
     '''
     prog1 = '''
@@ -91,10 +87,10 @@ else
     x:=2;
 END.'''
     g = PascalGrammar()
-    prog2 = g.parse(prog2)
-    print(*prog2.tree, sep=os.linesep)
+    prog3 = g.parse(prog3)
+    print(*prog3.tree, sep=os.linesep)
     symb_table_builder = SemanticAnalyzer()
-    symb_table_builder.visit(prog2)
+    symb_table_builder.visit(prog3)
 
 
 
