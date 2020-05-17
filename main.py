@@ -13,13 +13,10 @@ def main():
     d,n: array [1 .. 100] of integer;
     BEGIN
     g:=1;
-    d[1]:=1;
-    g:=g+1;
-    c:=True;
-    c:=False;
     END.
     '''
     prog1 = '''
+    g:=(g+g)+(2*3);
         Program t;
         var                    
             k, d: integer;

@@ -69,7 +69,16 @@ class SemanticAnalyzer(NodeVisitor):
     def __init__(self):
         # self.global_scope = ScopedSymbolTable(scope_name='global', scope_level=1)
         # self.current_scope = self.global_scope
+        self.dictionary = {'int':'integer', 'str':'char','bool':'boolean'}
         self.current_scope = None
+
+    def __typeChecker(self, type1, type2):
+        if(type1 is None or type2 is None):
+            return True
+        for key in self.dictionary:
+            if(type1 == key and type2 == self.dictionary[key]):
+                return True
+        return False
 
     def visit_BinOpNode(self, node):
         self.visit(node.arg1)
@@ -132,6 +141,7 @@ class SemanticAnalyzer(NodeVisitor):
         arr_symbol : ArraySymbol = self.current_scope.lookup(arr_name)
         if(liter < int(arr_symbol.from_) or liter > int(arr_symbol.to_)):
             raise Exception("Out of range '%s'" % liter)
+        #if(self.__typeChecker(,arr_symbol.type.name))
 
 
     def visit_BodyNode(self, node: BodyNode):
@@ -141,22 +151,74 @@ class SemanticAnalyzer(NodeVisitor):
         for stmt in node.exprs:
             self.visit(stmt)
 
+    #TODO rewrite it
     def visit_AssignNode(self, node: AssignNode):
         var = node.var
         visit = None
-        if(isinstance(var,ArrayIdentNode)):
+        type_val =None
+        #if(isinstance(node.val,BinOpNode)):
+         #   if(not self.__parseBinOpNode(node.val)):
+          #      raise Exception(
+           #         "Wrong type in expr")
+            #else:
+             #   self.visit(visit)
+        if( isinstance(var,ArrayIdentNode) ):
+            #добавить аналог type(visit.value)
             var_name = var.name.name
             visit = var
+            type_val = type(node.val.value).__name__
         else:
+            #если BinOpNode распарсить val как 1 b 2 аргументы
             var_name = var.name
             visit = node.val
+            type_val = type(visit.value).__name__
         var_symbol = self.current_scope.lookup(var_name)
         if var_symbol is None:
             #raise NameError(var_name)
             raise Exception(
                 "Undefined variable '%s' found" % var_name
             )
+        if(not self.__typeChecker(type_val,var_symbol.type.name)):
+            raise Exception(
+                "Wrong type '%s' found" % var_name
+            )
         self.visit(visit)
+
+    def __parseBinOpNode(self,node:BinOpNode):
+
+        #проход по дереву осуществили дальше или число или IdentNode(переменная) или LiteralNode(число)
+        type_arg1 = None
+        type_arg2 = None
+        res2 = None
+        # если мы внизу
+        if (not isinstance(node.arg1, BinOpNode)):
+            return True
+        if(isinstance(node.arg1, IdentNode)):
+            name_arg : VarSymbol = self.current_scope.lookup(node.arg1.name)
+            if name_arg is None:
+                raise Exception("Undefined variable '%s' found" % name_arg)
+            type_arg1 = name_arg.type.name #integer
+        if (isinstance(node.arg2, IdentNode)):
+            name_arg: VarSymbol = self.current_scope.lookup(node.arg2.name)
+            if name_arg is None:
+                raise Exception("Undefined variable '%s' found" % name_arg)
+            type_arg2 = name_arg.type.name  # integer
+        if(isinstance(node.arg1, LiteralNode)):
+            type_arg1 = type(node.arg1.value).__name__
+        if (isinstance(node.arg2, LiteralNode)):
+            type_arg2 = type(node.arg2.value).__name__
+        #result
+        if type_arg1 is not None and not (type_arg1 == type_arg2 or self.__typeChecker(type_arg1,type_arg2)):
+            return False
+
+        #if (isinstance(node.arg1, BinOpNode)):
+        res1 =  self.__parseBinOpNode(node.arg1)
+            #если в одном поддереве неудача
+        if not res1:
+            return False
+        #if (isinstance(node.arg2, BinOpNode)):
+        res2 =  self.__parseBinOpNode(node.arg2)
+        return res2
 
     def visit_ProcedureDeclNode(self, node: ProcedureDeclNode):
         proc_name = node.proc_name
