@@ -12,11 +12,13 @@ def main():
     a : char;
     d,n: array [1 .. 100] of integer;
     BEGIN
-    g:=1;
+    d[1]:=1;
+    g:=20999;
+    g:=g;
     END.
     '''
     prog1 = '''
-    g:=(g+g)+(2*3);
+   
         Program t;
         var                    
             k, d: integer;

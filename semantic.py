@@ -80,6 +80,7 @@ class SemanticAnalyzer(NodeVisitor):
                 return True
         return False
 
+    #попробовать интегрировать проверку ссюда
     def visit_BinOpNode(self, node):
         self.visit(node.arg1)
         self.visit(node.arg2)
@@ -89,9 +90,10 @@ class SemanticAnalyzer(NodeVisitor):
         var_symbol = self.current_scope.lookup(var_name)
         if var_symbol is None:
             raise Exception("Symbol(identifier) not found '%s'" % var_name)
+        return var_symbol.type.name
 
     def visit_LiteralNode(self, node: LiteralNode):
-        pass
+        return type(node.value).__name__
 
     def visit_ProgramNode(self, node: ProgramNode):
         print('ENTER scope: global')
@@ -141,7 +143,7 @@ class SemanticAnalyzer(NodeVisitor):
         arr_symbol : ArraySymbol = self.current_scope.lookup(arr_name)
         if(liter < int(arr_symbol.from_) or liter > int(arr_symbol.to_)):
             raise Exception("Out of range '%s'" % liter)
-        #if(self.__typeChecker(,arr_symbol.type.name))
+
 
 
     def visit_BodyNode(self, node: BodyNode):
@@ -156,33 +158,26 @@ class SemanticAnalyzer(NodeVisitor):
         var = node.var
         visit = None
         type_val =None
-        #if(isinstance(node.val,BinOpNode)):
-         #   if(not self.__parseBinOpNode(node.val)):
-          #      raise Exception(
-           #         "Wrong type in expr")
-            #else:
-             #   self.visit(visit)
+
         if( isinstance(var,ArrayIdentNode) ):
-            #добавить аналог type(visit.value)
             var_name = var.name.name
             visit = var
             type_val = type(node.val.value).__name__
         else:
-            #если BinOpNode распарсить val как 1 b 2 аргументы
             var_name = var.name
             visit = node.val
-            type_val = type(visit.value).__name__
         var_symbol = self.current_scope.lookup(var_name)
         if var_symbol is None:
             #raise NameError(var_name)
             raise Exception(
                 "Undefined variable '%s' found" % var_name
             )
-        if(not self.__typeChecker(type_val,var_symbol.type.name)):
+        type_visited = self.visit(visit)
+        if type_val is None: type_val=type_visited
+        if not (self.__typeChecker(type_val, var_symbol.type.name) or type_val == var_symbol.type.name):
             raise Exception(
                 "Wrong type '%s' found" % var_name
             )
-        self.visit(visit)
 
     def __parseBinOpNode(self,node:BinOpNode):
 
