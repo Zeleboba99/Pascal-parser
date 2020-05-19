@@ -75,15 +75,33 @@ class SemanticAnalyzer(NodeVisitor):
     def __typeChecker(self, type1, type2):
         if(type1 is None or type2 is None):
             return True
+        if type1 == type2:
+            return True
         for key in self.dictionary:
-            if(type1 == key and type2 == self.dictionary[key]):
+            if(type1 == key and type2 == self.dictionary[key] or type2==key and type1==self.dictionary[key]):
                 return True
         return False
 
     #попробовать интегрировать проверку ссюда
     def visit_BinOpNode(self, node):
-        self.visit(node.arg1)
-        self.visit(node.arg2)
+        type_arg1 = self.visit(node.arg1)
+        type_arg2 = self.visit(node.arg2)
+
+        if (not isinstance(node.arg1, BinOpNode)) or not (isinstance(node.arg2,BinOpNode)):
+
+            if (isinstance(node.arg1, IdentNode)):
+                name_arg: VarSymbol = self.current_scope.lookup(node.arg1.name)
+                type_arg1 = name_arg.type.name  # integer
+            if (isinstance(node.arg2, IdentNode)):
+                name_arg: VarSymbol = self.current_scope.lookup(node.arg2.name)
+                type_arg2 = name_arg.type.name  # integer
+            if (isinstance(node.arg1, LiteralNode)):
+                type_arg1 = type(node.arg1.value).__name__
+            if (isinstance(node.arg2, LiteralNode)):
+                type_arg2 = type(node.arg2.value).__name__
+            if type_arg1 is not None and not self.__typeChecker(type_arg1, type_arg2):
+                raise Exception("Wrong type found")
+            return type_arg1
 
     def visit_IdentNode(self, node: IdentNode):
         var_name = node.name
@@ -174,7 +192,7 @@ class SemanticAnalyzer(NodeVisitor):
             )
         type_visited = self.visit(visit)
         if type_val is None: type_val=type_visited
-        if not (self.__typeChecker(type_val, var_symbol.type.name) or type_val == var_symbol.type.name):
+        if not self.__typeChecker(type_val, var_symbol.type.name):
             raise Exception(
                 "Wrong type '%s' found" % var_name
             )
@@ -203,7 +221,7 @@ class SemanticAnalyzer(NodeVisitor):
         if (isinstance(node.arg2, LiteralNode)):
             type_arg2 = type(node.arg2.value).__name__
         #result
-        if type_arg1 is not None and not (type_arg1 == type_arg2 or self.__typeChecker(type_arg1,type_arg2)):
+        if type_arg1 is not None and not self.__typeChecker(type_arg1,type_arg2):
             return False
 
         #if (isinstance(node.arg1, BinOpNode)):

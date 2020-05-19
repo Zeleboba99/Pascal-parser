@@ -12,8 +12,7 @@ def main():
     a : char;
     d,n: array [1 .. 100] of integer;
     BEGIN
-    d[1]:=1;
-    g:=20999;
+    g:=(g+45)*('c'+1);
     g:=g;
     END.
     '''
