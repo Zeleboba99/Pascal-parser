@@ -43,8 +43,27 @@ class ProcedureSymbol(Symbol):
         #type is None, procedure returns nothing
 
     def __str__(self):
+        def formatter(p):
+            return '{name}: {type}'.format(name=str(p.name), type=str(p.type))
         return '<{class_name}(name={name}, parameters={params})>'.format(
             class_name=self.__class__.__name__,
             name=self.name,
-            params=self.params,
+            params=list(map(formatter, self.params)),
+        )
+
+
+class FunctionSymbol(Symbol):
+    def __init__(self, name, params=None):
+        super(FunctionSymbol, self).__init__(name)
+        self.params = params if params is not None else []
+        #type is None, procedure returns nothing
+
+    def __str__(self):
+        def formatter(p):
+            return '{name}: {type}'.format(name=str(p.name), type=str(p.type))
+        return '<{class_name}(name={name}, parameters={params}): {type}>'.format(
+            class_name=self.__class__.__name__,
+            name=self.name,
+            params=list(map(formatter, self.params)),
+            type=self.type,
         )

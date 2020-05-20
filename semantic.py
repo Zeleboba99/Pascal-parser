@@ -192,12 +192,12 @@ class SemanticAnalyzer(NodeVisitor):
         )
 
         self.current_scope = procedure_scope
-        #for param in node.params:
-        param_type = self.current_scope.lookup(node.params.vars_type[0].name)
-        #for param_name in node.params.vars_list:
-        var_symbol = VarSymbol(node.params.vars_list, param_type)
-        self.current_scope.define(var_symbol)
-        proc_symbol.params.append(var_symbol)
+        for param in node.params.vars_list:
+            param_type = self.current_scope.lookup(param.vars_type.name)
+            for param_name in param.ident_list.idents:
+                var_symbol = VarSymbol(param_name.name, param_type)
+                self.current_scope.define(var_symbol)
+                proc_symbol.params.append(var_symbol)
 
         for stmt in node.stmt_list.body.exprs:
             self.visit(stmt)
@@ -205,6 +205,35 @@ class SemanticAnalyzer(NodeVisitor):
         print(procedure_scope)
         self.current_scope = self.current_scope.enclosing_scope
         print('LEAVE scope: %s' % proc_name)
+
+    def visit_FunctionDeclNode(self, node: FunctionDeclNode):
+        func_name = node.proc_name
+        func_type = node.returning_type.name
+        func_symbol = FunctionSymbol(func_name)
+        func_symbol.type = func_type
+        self.current_scope.define(func_symbol)
+
+        print('ENTER scope: %s' % func_name)
+        procedure_scope = ScopedSymbolTable(
+            scope_name=func_name,
+            scope_level=self.current_scope.scope_level + 1,
+            enclosing_scope=self.current_scope
+        )
+
+        self.current_scope = procedure_scope
+        for param in node.params.vars_list:
+            param_type = self.current_scope.lookup(param.vars_type.name)
+            for param_name in param.ident_list.idents:
+                var_symbol = VarSymbol(param_name.name, param_type)
+                self.current_scope.define(var_symbol)
+                func_symbol.params.append(var_symbol)
+
+        for stmt in node.stmt_list.body.exprs:
+            self.visit(stmt)
+
+        print(procedure_scope)
+        self.current_scope = self.current_scope.enclosing_scope
+        print('LEAVE scope: %s' % func_name)
 
     def visit_CallNode(self, node: CallNode):
         f=1

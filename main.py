@@ -64,7 +64,7 @@ def main():
 
     prog2 = '''Program prog1;
 var x, y, i: integer;
-procedure Alpha(a: integer);
+function Alpha(a,b: integer, g:char):integer;
     var y: integer;
 begin 
 x:=x+1+y;
@@ -89,10 +89,10 @@ else
     x:=2;
 END.'''
     g = PascalGrammar()
-    prog3 = g.parse(prog3)
-    print(*prog3.tree, sep=os.linesep)
+    prog2 = g.parse(prog2)
+    print(*prog2.tree, sep=os.linesep)
     symb_table_builder = SemanticAnalyzer()
-    symb_table_builder.visit(prog3)
+    symb_table_builder.visit(prog2)
 
 
 
