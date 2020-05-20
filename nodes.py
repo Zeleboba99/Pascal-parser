@@ -328,16 +328,14 @@ class BodyNode(ExprNode):
 # Узел содержащий параметры функции, процедуры
 #TODO переделать, параметры считываются неправильно
 class ParamsNode(StmtNode):
-    def __init__(self, vars_list: TypeSpecNode, *vars_type: Tuple[AstNode, ...],
+    def __init__(self, *vars_list: VarDeclNode,
                  row: Optional[int] = None, line: Optional[int] = None, **props):
         super().__init__(row=row, line=line, **props)
-        self.vars_type = vars_type if vars_type else _empty
         self.vars_list = vars_list if vars_list else _empty
 
     @property
     def childs(self) -> Tuple[ExprNode, ...]:
-        # return self.vars_type, (*self.vars_list)
-        return (self.vars_list,) + self.vars_type
+        return self.vars_list
 
     def __str__(self) -> str:
         return 'params'

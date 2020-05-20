@@ -75,10 +75,10 @@ class PascalGrammar:
         #simple_assign = ((ident | array_ident) + ASSIGN.suppress() + expr).setName('assign')
         # type_arr = ARRAY + LBRACK + num + pp.Literal("..").suppress() + num + RBRACK + OF + type_spec
         ident_list = ident + pp.ZeroOrMore(COMMA + ident)
-        var_decl = ident_list + COLON + type_spec + SEMI
+        var_decl = ident_list + COLON + type_spec
         array_decl = ident_list + COLON + ARRAY + LBRACK + literal + pp.Literal(
             "..").suppress() + literal + RBRACK + OF + type_spec + SEMI
-        vars_decl = VAR + pp.ZeroOrMore(var_decl | procedure_decl | function_decl | array_decl)
+        vars_decl = VAR + pp.ZeroOrMore((var_decl + SEMI) | procedure_decl | function_decl | array_decl)
 
         assign = pp.Optional(array_ident | ident) + ASSIGN.suppress() + expr
         simple_stmt = assign | call
@@ -106,12 +106,12 @@ class PascalGrammar:
         stmt_list << (pp.ZeroOrMore(stmt + pp.ZeroOrMore(SEMI)))
 
         body = LBRACE + stmt_list + RBRACE
-        params = pp.ZeroOrMore(ident + pp.ZeroOrMore(COMMA + ident) + COLON + type_spec + SEMI) + \
-        (ident + pp.ZeroOrMore(COMMA + ident) + COLON + type_spec)
-        procedure_decl << pp.Keyword("procedure").suppress() + ident + pp.ZeroOrMore(LPAR + params + RPAR) + SEMI + vars_decl + body + SEMI
+        #params = pp.ZeroOrMore(ident + pp.ZeroOrMore(COMMA + ident) + COLON + type_spec + SEMI) + \
+        #(ident + pp.ZeroOrMore(COMMA + ident) + COLON + type_spec)
+        params = LPAR + pp.ZeroOrMore(var_decl) + pp.ZeroOrMore(COMMA + var_decl) + RPAR
+        procedure_decl << pp.Keyword("procedure").suppress() + ident + params + SEMI + vars_decl + body + SEMI
 
-        function_decl << pp.Keyword("function").suppress() + ident + pp.Optional(
-            LPAR + params + RPAR) + COLON + type_spec + SEMI + \
+        function_decl << pp.Keyword("function").suppress() + ident + params + COLON + type_spec + SEMI + \
         vars_decl + body + SEMI
 
         program = pp.Keyword("Program").suppress() + ident + SEMI + pp.Optional(vars_decl) + body + DOT
