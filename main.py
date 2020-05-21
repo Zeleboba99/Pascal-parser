@@ -69,11 +69,18 @@ function Alpha(a,b: integer, g:char):integer;
 begin 
 x:=x+1+y;
 end;
+procedure Alpha1(a,b: integer, g:char);
+    var y: integer;
+begin 
+x:=x+1+y;
+end;
 BEGIN
 y:=9;
 x:=3+y-1;
 while (y>=5) do
 begin
+    Alpha(1);
+    Alpha1(1);
     y:=y+1;
     y:=y+1;
 end;

@@ -20,6 +20,7 @@ class ScopedSymbolTable(object):
         self.scope_level = scope_level
         self.enclosing_scope = enclosing_scope
         self.init_builtins()
+        self.init_builtin_functions()
 
     def __str__(self):
         h1 = 'SCOPE (SCOPED SYMBOL TABLE)'
@@ -46,6 +47,12 @@ class ScopedSymbolTable(object):
         self.define(BuiltinTypeSymbol('integer'))
         self.define(BuiltinTypeSymbol('char'))
         self.define(BuiltinTypeSymbol('boolean'))
+
+    def init_builtin_functions(self):
+        self.define(BuiltinFunction('Read'))
+        self.define(BuiltinFunction('ReadLn'))
+        self.define(BuiltinFunction('Write'))
+        self.define(BuiltinFunction('WriteLn'))
 
     def define(self, symbol: Symbol):
         print('Define: %s' % symbol)
@@ -180,7 +187,7 @@ class SemanticAnalyzer(NodeVisitor):
             )
 
     def visit_ProcedureDeclNode(self, node: ProcedureDeclNode):
-        proc_name = node.proc_name
+        proc_name = node.proc_name.name
         proc_symbol = ProcedureSymbol(proc_name)
         self.current_scope.define(proc_symbol)
 
@@ -207,7 +214,7 @@ class SemanticAnalyzer(NodeVisitor):
         print('LEAVE scope: %s' % proc_name)
 
     def visit_FunctionDeclNode(self, node: FunctionDeclNode):
-        func_name = node.proc_name
+        func_name = node.proc_name.name
         func_type = node.returning_type.name
         func_symbol = FunctionSymbol(func_name)
         func_symbol.type = func_type
@@ -236,7 +243,12 @@ class SemanticAnalyzer(NodeVisitor):
         print('LEAVE scope: %s' % func_name)
 
     def visit_CallNode(self, node: CallNode):
-        f=1
+        func_name = node.func.name
+        func_symbol = self.current_scope.lookup(func_name)
+        if func_symbol is None:
+            raise Exception(
+                "Undefined function '%s' " % func_name
+            )
         for param in node.params:
             self.visit(param)
 

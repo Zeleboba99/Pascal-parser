@@ -12,6 +12,13 @@ class BuiltinTypeSymbol(Symbol):
     def __str__(self):
         return self.name
 
+class BuiltinFunction(Symbol):
+    def __init__(self, name):
+        super().__init__(name)
+
+    def __str__(self):
+        return self.name
+
 class ArraySymbol(Symbol):
     def __init__(self,name,type, from_ , to_):
         super().__init__(name,type)
