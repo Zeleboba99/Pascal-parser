@@ -249,6 +249,7 @@ class SemanticAnalyzer(NodeVisitor):
             raise Exception(
                 "Undefined function '%s' " % func_name
             )
+        # TODO check num and types of params
         for param in node.params:
             self.visit(param)
 
