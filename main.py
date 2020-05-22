@@ -12,8 +12,9 @@ def main():
     a : char;
     d,n: array [1 .. 100] of integer;
     BEGIN
-    d[1]:=1;
-    g:=20999;
+    d[1]:=d[2]*24; 
+    g:=20999+23;
+     
     g:=g;
     END.
     '''
@@ -64,6 +65,9 @@ def main():
 
     prog2 = '''Program prog1;
 var x, y, i: integer;
+            j: char;
+            bo:boolean;
+            g, c: array [1 .. 100] of integer;
 function Alpha(a,b: integer, g:char):integer;
     var y: integer;
 begin 
@@ -72,14 +76,16 @@ end;
 procedure Alpha1(a,b: integer, g:char);
     var y: integer;
 begin 
-x:=x+1+y;
+x:=x+1+i;
 end;
 BEGIN
-y:=9;
+y:=(y+45)*(1+1);
+g[1]:=1+1;
 x:=3+y-1;
 while (y>=5) do
 begin
-    Alpha(1);
+    Alpha();
+    bo:=bo+bo;
     Alpha1(1);
     y:=y+1;
     y:=y+1;

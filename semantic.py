@@ -82,15 +82,33 @@ class SemanticAnalyzer(NodeVisitor):
     def __typeChecker(self, type1, type2):
         if(type1 is None or type2 is None):
             return True
+        if type1 == type2:
+            return True
         for key in self.dictionary:
-            if(type1 == key and type2 == self.dictionary[key]):
+            if(type1 == key and type2 == self.dictionary[key] or type2==key and type1==self.dictionary[key]):
                 return True
         return False
 
     #попробовать интегрировать проверку ссюда
     def visit_BinOpNode(self, node):
-        self.visit(node.arg1)
-        self.visit(node.arg2)
+        type_arg1 = self.visit(node.arg1)
+        type_arg2 = self.visit(node.arg2)
+
+        if (not isinstance(node.arg1, BinOpNode)) or not (isinstance(node.arg2, BinOpNode)):
+
+            if (isinstance(node.arg1, IdentNode)):
+                name_arg: VarSymbol = self.current_scope.lookup(node.arg1.name)
+                type_arg1 = name_arg.type.name  # integer
+            if (isinstance(node.arg2, IdentNode)):
+                name_arg: VarSymbol = self.current_scope.lookup(node.arg2.name)
+                type_arg2 = name_arg.type.name  # integer
+            if (isinstance(node.arg1, LiteralNode)):
+                type_arg1 = type(node.arg1.value).__name__
+            if (isinstance(node.arg2, LiteralNode)):
+                type_arg2 = type(node.arg2.value).__name__
+            if type_arg1 is not None and not self.__typeChecker(type_arg1, type_arg2):
+                raise Exception("Wrong type found")
+            return type_arg1
 
     def visit_IdentNode(self, node: IdentNode):
         var_name = node.name
@@ -131,6 +149,8 @@ class SemanticAnalyzer(NodeVisitor):
                     "Duplicate identifier '%s' found" % var_name
                 )
             self.current_scope.define(var_symbol)
+
+
     def visit_ArrayDeclNode(self, node: ArrayDeclNode):
         type = node.vars_type
         from_ = node.from_.literal
@@ -150,6 +170,7 @@ class SemanticAnalyzer(NodeVisitor):
         arr_symbol : ArraySymbol = self.current_scope.lookup(arr_name)
         if(liter < int(arr_symbol.from_) or liter > int(arr_symbol.to_)):
             raise Exception("Out of range '%s'" % liter)
+        return arr_symbol.type.name
 
 
 
@@ -164,12 +185,12 @@ class SemanticAnalyzer(NodeVisitor):
     def visit_AssignNode(self, node: AssignNode):
         var = node.var
         visit = None
-        type_val =None
+        type_var =None
 
         if( isinstance(var,ArrayIdentNode) ):
             var_name = var.name.name
-            visit = var
-            type_val = type(node.val.value).__name__
+            type_var = self.visit(var)
+            visit = node.val
         else:
             var_name = var.name
             visit = node.val
@@ -180,8 +201,8 @@ class SemanticAnalyzer(NodeVisitor):
                 "Undefined variable '%s' found" % var_name
             )
         type_visited = self.visit(visit)
-        if type_val is None: type_val=type_visited
-        if not (self.__typeChecker(type_val, var_symbol.type.name) or type_val == var_symbol.type.name):
+        if type_var is None: type_var=var_symbol.type.name
+        if not self.__typeChecker(type_visited, type_var):
             raise Exception(
                 "Wrong type '%s' found" % var_name
             )
