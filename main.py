@@ -83,9 +83,9 @@ g[1]:=1+1;
 x:=3+y-1;
 while (y>=5) do
 begin
-    Alpha();
-    bo:=bo+bo;
-    Alpha1(1);
+    Alpha(1,2,'c');
+    bo:=bo and bo;
+    Alpha1(1,2,4);
     y:=y+1;
     y:=y+1;
 end;
@@ -101,10 +101,10 @@ else
     x:=2;
 END.'''
     g = PascalGrammar()
-    prog3 = g.parse(prog3)
-    print(*prog3.tree, sep=os.linesep)
+    prog2 = g.parse(prog2)
+    print(*prog2.tree, sep=os.linesep)
     symb_table_builder = SemanticAnalyzer()
-    symb_table_builder.visit(prog3)
+    symb_table_builder.visit(prog2)
 
 
 
