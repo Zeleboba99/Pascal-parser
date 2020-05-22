@@ -320,6 +320,7 @@ class SemanticAnalyzer(NodeVisitor):
             )
         for param in node.params:
             self.visit(param)
+        return func_symbol.type
 
     def visit_IfNode(self, node: IfNode):
         self.visit(node.cond)

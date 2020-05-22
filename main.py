@@ -12,7 +12,13 @@ def main():
     a : char;
     d,n: array [1 .. 100] of integer;
     h : array [1 .. 7] of boolean;
+    function Alpha(a,b: integer, g:char):integer;
+    var y: integer;
+    begin 
+    g:='c';
+    end;
     BEGIN
+    g:=Alpha(1,2,n[1]);
     h[1]:=d[2]=1; 
     g:=g;
     END.
@@ -83,7 +89,7 @@ g[1]:=1+1;
 x:=3+y-1;
 while (y>=5) do
 begin
-    Alpha(1,2,'c');
+    y:=Alpha(1,2,g[1]);
     bo:=bo and bo;
     Alpha1(1,2,4);
     y:=y+1;
@@ -101,10 +107,10 @@ else
     x:=2;
 END.'''
     g = PascalGrammar()
-    prog2 = g.parse(prog2)
-    print(*prog2.tree, sep=os.linesep)
+    prog3 = g.parse(prog3)
+    print(*prog3.tree, sep=os.linesep)
     symb_table_builder = SemanticAnalyzer()
-    symb_table_builder.visit(prog2)
+    symb_table_builder.visit(prog3)
 
 
 
