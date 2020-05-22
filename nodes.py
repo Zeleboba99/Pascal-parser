@@ -92,7 +92,7 @@ class BinOp(Enum):
     GE = '>='
     LE = '<='
     NEQUALS = '<>'
-    EQUALS = '=='
+    EQUALS = '='
     GT = '>'
     LT = '<'
     LOGICAL_AND = 'and'

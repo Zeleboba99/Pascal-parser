@@ -38,7 +38,7 @@ class PascalGrammar:
         AND = pp.Literal('and')
         OR = pp.Literal('or')
         GE, LE, GT, LT = pp.Literal('>='), pp.Literal('<='), pp.Literal('>'), pp.Literal('<')
-        NEQUALS, EQUALS = pp.Literal('!='), pp.Literal('==')
+        NEQUALS, EQUALS = pp.Literal('!='), pp.Literal('=')
         ARRAY = pp.CaselessKeyword("array").suppress()
         OF = pp.CaselessKeyword("of").suppress()
 

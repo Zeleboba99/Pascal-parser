@@ -11,10 +11,9 @@ def main():
     c : boolean;
     a : char;
     d,n: array [1 .. 100] of integer;
+    h : array [1 .. 7] of boolean;
     BEGIN
-    d[1]:=d[2]*24; 
-    g:=20999+23;
-     
+    h[1]:=d[2]=1; 
     g:=g;
     END.
     '''
@@ -102,10 +101,10 @@ else
     x:=2;
 END.'''
     g = PascalGrammar()
-    prog2 = g.parse(prog2)
-    print(*prog2.tree, sep=os.linesep)
+    prog3 = g.parse(prog3)
+    print(*prog3.tree, sep=os.linesep)
     symb_table_builder = SemanticAnalyzer()
-    symb_table_builder.visit(prog2)
+    symb_table_builder.visit(prog3)
 
 
 

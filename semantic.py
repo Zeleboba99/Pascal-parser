@@ -77,7 +77,45 @@ class SemanticAnalyzer(NodeVisitor):
         # self.global_scope = ScopedSymbolTable(scope_name='global', scope_level=1)
         # self.current_scope = self.global_scope
         self.dictionary = {'int':'integer', 'str':'char','bool':'boolean'}
+        self.BinOpArgTypes = {
+            'ADD':['integer','char'],
+            'SUB':['integer'],
+            'MUL':['integer'],
+            'DIVISION':['integer'],
+            'DIV':['integer'],
+            'MOD':['integer'],
+            'GE':['integer','char'],
+            'LE':['integer','char'],
+            'NEQUALS':['integer','char','boolean'],
+            'EQUALS':['integer','char','boolean'],
+            'GT':['integer','char'],
+            'LT': ['integer', 'char'],
+            'LOGICAL_AND':['boolean'],
+            'LOGICAL_OR':['boolean']}
+
+        self.BinOpReturnTypes = {
+            'ADD': ['integer', 'char'],
+            'SUB': ['integer'],
+            'MUL': ['integer'],
+            'DIVISION': ['integer'],
+            'DIV': ['integer'],
+            'MOD': ['integer'],
+            'GE': ['boolean'],
+            'LE': ['boolean'],
+            'NEQUALS': ['boolean'],
+            'EQUALS': ['boolean'],
+            'GT': ['boolean'],
+            'LT': ['boolean'],
+            'LOGICAL_AND': ['boolean'],
+            'LOGICAL_OR': ['boolean']}
         self.current_scope = None
+
+    #convert type name to a correct format
+    def __changeType(self,type) -> str:
+        for key in self.dictionary:
+            if type == key :
+                return self.dictionary[key]
+        return type
 
     def __typeChecker(self, type1, type2):
         if(type1 is None or type2 is None):
@@ -89,26 +127,35 @@ class SemanticAnalyzer(NodeVisitor):
                 return True
         return False
 
-    #попробовать интегрировать проверку ссюда
+    def __isBinaryArgsValid(self, binOP, type_var):
+        for key in self.BinOpArgTypes:
+            if(binOP == key and type_var in self.BinOpArgTypes[key]):
+                return True
+        return False
+
+    def __BinaryReturningType(self,binOP,type_var)->str:
+        for key in self.BinOpReturnTypes:
+            if key == binOP:
+                if len(self.BinOpReturnTypes[key]) == 1:
+                    return self.BinOpReturnTypes[key][0]
+                else:
+                    return type_var
+
+
     def visit_BinOpNode(self, node):
         type_arg1 = self.visit(node.arg1)
         type_arg2 = self.visit(node.arg2)
 
         if (not isinstance(node.arg1, BinOpNode)) or not (isinstance(node.arg2, BinOpNode)):
-
-            if (isinstance(node.arg1, IdentNode)):
-                name_arg: VarSymbol = self.current_scope.lookup(node.arg1.name)
-                type_arg1 = name_arg.type.name  # integer
-            if (isinstance(node.arg2, IdentNode)):
-                name_arg: VarSymbol = self.current_scope.lookup(node.arg2.name)
-                type_arg2 = name_arg.type.name  # integer
-            if (isinstance(node.arg1, LiteralNode)):
-                type_arg1 = type(node.arg1.value).__name__
-            if (isinstance(node.arg2, LiteralNode)):
-                type_arg2 = type(node.arg2.value).__name__
             if type_arg1 is not None and not self.__typeChecker(type_arg1, type_arg2):
-                raise Exception("Wrong type found")
-            return type_arg1
+                raise Exception("Incompatible types in line: ")
+            type_arg1 = self.__changeType(type_arg1)
+            type_arg2 = self.__changeType(type_arg2)
+            if not self.__isBinaryArgsValid(node.op.name, type_arg1):
+                raise Exception(
+                    "Operation {op} not supported for types {t1} and {t2}"
+                        .format(op = node.op.name,t1 = type_arg1,t2=type_arg2))
+            return self.__BinaryReturningType(node.op.name, type_arg1)
 
     def visit_IdentNode(self, node: IdentNode):
         var_name = node.name
@@ -181,19 +228,16 @@ class SemanticAnalyzer(NodeVisitor):
         for stmt in node.exprs:
             self.visit(stmt)
 
-    #TODO rewrite it
     def visit_AssignNode(self, node: AssignNode):
         var = node.var
-        visit = None
+        visit = node.val
         type_var =None
 
         if( isinstance(var,ArrayIdentNode) ):
             var_name = var.name.name
             type_var = self.visit(var)
-            visit = node.val
         else:
             var_name = var.name
-            visit = node.val
         var_symbol = self.current_scope.lookup(var_name)
         if var_symbol is None:
             #raise NameError(var_name)
