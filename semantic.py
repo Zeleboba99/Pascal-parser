@@ -314,85 +314,43 @@ class SemanticAnalyzer(NodeVisitor):
             raise Exception(
                 "Undefined function '%s' " % func_name
             )
-        if(len(node.params) != len(func_symbol.params)):
-            raise Exception(
-                "Wrong number of parameters specified for call to '%s' " % func_name
-            )
+        #TODO builtin vs proc and func
+        if (isinstance(func_symbol, FunctionSymbol) or isinstance(func_symbol, ProcedureSymbol)):
+            if(len(node.params) != len(func_symbol.params)):
+                raise Exception(
+                    "Wrong number of parameters specified for call to '%s' " % func_name
+                )
         for param in node.params:
             self.visit(param)
         return func_symbol.type
 
     def visit_IfNode(self, node: IfNode):
-        self.visit(node.cond)
-        # THEN SCOPE
-        # then_block_symbol = BlockSymbol('THEN BODY')
-        # self.current_scope.define(then_block_symbol)
-        #
-        # print('ENTER scope: %s' % then_block_symbol)
-        # then_block_scope = ScopedSymbolTable(
-        #     scope_name=then_block_symbol,
-        #     scope_level=self.current_scope.scope_level + 1,
-        #     enclosing_scope=self.current_scope
-        # )
-        # self.current_scope = then_block_scope
+        type_cond = self.visit(node.cond)
+        if (type_cond != 'boolean'):
+            raise Exception(
+                "Wrong type of if condition '%s' " % type_cond
+            )
         self.visit(node.then_stmt)
-        # print(then_block_scope)
-        # self.current_scope = self.current_scope.enclosing_scope
-        # print('LEAVE scope: %s' % then_block_symbol.name)
 
-        # ELSE SCOPE
         if node.else_stmt:
-            # else_block_symbol = BlockSymbol('ELSE BODY')
-            # self.current_scope.define(else_block_symbol)
-            #
-            # print('ENTER scope: %s' % else_block_symbol)
-            # else_block_scope = ScopedSymbolTable(
-            #     scope_name=else_block_symbol,
-            #     scope_level=self.current_scope.scope_level + 1,
-            #     enclosing_scope=self.current_scope
-            # )
-            # self.current_scope = else_block_scope
             self.visit(node.else_stmt)
-            # print(else_block_scope)
-            # self.current_scope = self.current_scope.enclosing_scope
-            # print('LEAVE scope: %s' % else_block_symbol.name)
+
 
 
     def visit_WhileNode(self, node: WhileNode):
-        self.visit(node.cond)
-        # block_symbol = BlockSymbol('WHILE BODY')
-        # self.current_scope.define(block_symbol)
-        #
-        # print('ENTER scope: %s' % block_symbol)
-        # block_scope = ScopedSymbolTable(
-        #     scope_name=block_symbol,
-        #     scope_level=self.current_scope.scope_level + 1,
-        #     enclosing_scope=self.current_scope
-        # )
-        #
-        # self.current_scope = block_scope
+        type_cond = self.visit(node.cond)
+        if (type_cond != 'boolean'):
+            raise Exception(
+                "Wrong type of while condition '%s' " % type_cond
+            )
         self.visit(node.stmt_list)
-        #
-        # print(block_scope)
-        # self.current_scope = self.current_scope.enclosing_scope
-        # print('LEAVE scope: %s' % block_symbol.name)
 
+    #TODO check type of node.init
     def visit_ForNode(self, node: ForNode):
-        self.visit(node.init)
-        self.visit(node.to)
-        # block_symbol = BlockSymbol('FOR BODY')
-        # self.current_scope.define(block_symbol)
-        #
-        # print('ENTER scope: %s' % block_symbol)
-        # block_scope = ScopedSymbolTable(
-        #     scope_name=block_symbol,
-        #     scope_level=self.current_scope.scope_level + 1,
-        #     enclosing_scope=self.current_scope
-        # )
-        #
-        # self.current_scope = block_scope
+        type_init = self.visit(node.init)
+        type_to = self.visit(node.to)
+        if (type_to != 'int'):
+            raise Exception(
+                "Wrong type of for condition '%s'" % type_to
+            )
         self.visit(node.body)
-        #
-        # print(block_scope)
-        # self.current_scope = self.current_scope.enclosing_scope
-        # print('LEAVE scope: %s' % block_symbol.name)

@@ -16,11 +16,17 @@ def main():
     var y: integer;
     begin 
     g:='c';
+    c:=True;
+    ReadLn(g);    
+    if (c) then 
+    c:=False;
+    for (a:=2 to 6) do
+    begin 
     end;
-    BEGIN
-    g:=Alpha(1,2,n[1]);
+    end;
+    BEGIN    
     h[1]:=d[2]=1; 
-    g:=g;
+    g:=g;    
     END.
     '''
     prog1 = '''
