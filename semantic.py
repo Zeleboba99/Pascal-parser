@@ -1,6 +1,7 @@
 from nodes import *
 from grammar import *
 from symbols import *
+from jasmin import CodeGenerator
 
 
 class NodeVisitor(object):
@@ -21,6 +22,7 @@ class ScopedSymbolTable(object):
         self.enclosing_scope = enclosing_scope
         self.init_builtins()
         self.init_builtin_functions()
+        self.last_index = 0
 
     def __str__(self):
         h1 = 'SCOPE (SCOPED SYMBOL TABLE)'
@@ -70,12 +72,22 @@ class ScopedSymbolTable(object):
         if self.enclosing_scope is not None:
             return self.enclosing_scope.lookup(name)
 
+    def get_level_scope(self, name) -> int:
+        cur_scope = self
+        while cur_scope is not None:
+            symbol = self._symbols.get(name)
+            if symbol is not None:
+                return cur_scope.scope_level
+            else:
+                cur_scope = cur_scope.enclosing_scope
+        return 0
 
 
 class SemanticAnalyzer(NodeVisitor):
-    def __init__(self):
-        # self.global_scope = ScopedSymbolTable(scope_name='global', scope_level=1)
-        # self.current_scope = self.global_scope
+    def __init__(self, generator: CodeGenerator):
+        self.generator = generator
+        self.arrays_init = ''
+        self.assemblerDict = {'integer':'I', 'char':'C','boolean':'Z'}
         self.dictionary = {'int':'integer', 'str':'char','bool':'boolean'}
         self.BinOpArgTypes = {
             'ADD':['integer','char'],
@@ -142,9 +154,10 @@ class SemanticAnalyzer(NodeVisitor):
                     return type_var
 
 
-    def visit_BinOpNode(self, node):
+    def visit_BinOpNode(self, node: BinOpNode):
         type_arg1 = self.visit(node.arg1)
         type_arg2 = self.visit(node.arg2)
+        node.jbc(self.generator)
 
         if (not isinstance(node.arg1, BinOpNode)) or not (isinstance(node.arg2, BinOpNode)):
             if type_arg1 is not None and not self.__typeChecker(type_arg1, type_arg2):
@@ -154,31 +167,45 @@ class SemanticAnalyzer(NodeVisitor):
             if not self.__isBinaryArgsValid(node.op.name, type_arg1):
                 raise Exception(
                     "Operation {op} not supported for types {t1} and {t2}"
-                        .format(op = node.op.name,t1 = type_arg1,t2=type_arg2))
+                        .format(op=node.op.name, t1=type_arg1, t2=type_arg2))
             return self.__BinaryReturningType(node.op.name, type_arg1)
 
     def visit_IdentNode(self, node: IdentNode):
         var_name = node.name
         var_symbol = self.current_scope.lookup(var_name)
+
+        if var_symbol.is_field:
+            self.generator.add('getstatic {0}/{1} {2}'.format(self.global_scope.scope_name, var_name, self.assemblerDict[var_symbol.type.name]))
+        else:
+            self.generator.add('{0}load_{1}'.format(self.assemblerDict[var_symbol.type.name].lower(), var_symbol.index))
+
         if var_symbol is None:
             raise Exception("Symbol(identifier) not found '%s'" % var_name)
         return var_symbol.type.name
 
     def visit_LiteralNode(self, node: LiteralNode):
+        node.jbc(self.generator)
         return type(node.value).__name__
 
     def visit_ProgramNode(self, node: ProgramNode):
         print('ENTER scope: global')
         self.global_scope = ScopedSymbolTable(
-            scope_name='global',
+            scope_name=node.prog_name,
             scope_level=1,
             enclosing_scope=self.current_scope
         )
         self.current_scope = self.global_scope
+        node.jbc(self.generator)
         self.visit(node.vars_decl)
+        self.generator.add('''.method                  public static main([Ljava/lang/String;)V
+.limit stack          100
+.limit locals         100''')
+        self.generator.add(self.arrays_init)
         self.visit(node.stmt_list)
         print(self.current_scope)
         self.current_scope = self.current_scope.enclosing_scope
+        self.generator.add('''   return
+.end method''')
         print('LEAVE scope: global')
 
     def visit_VarsDeclNode(self, node: VarsDeclNode):
@@ -189,14 +216,20 @@ class SemanticAnalyzer(NodeVisitor):
         type_symbol = self.current_scope.lookup(node.vars_type.name)
         for ident in node.ident_list.idents:
             var_name = ident.name
-            var_symbol = VarSymbol(var_name, type_symbol)
+            var_symbol = VarSymbol(var_name, type_symbol, index=self.current_scope.last_index)
+            self.current_scope.last_index += 1
             #only for current scope
             if self.current_scope.lookup(var_name, current_scope_only=True):
                 raise Exception(
                     "Duplicate identifier '%s' found" % var_name
                 )
             self.current_scope.define(var_symbol)
-
+            definition_level = self.current_scope.get_level_scope(var_name)
+            if definition_level == 1:
+                var_symbol.is_field = True
+                self.generator.add('.field public static {0} {1}'.format(var_name, self.assemblerDict[type_symbol.name]))
+            else:
+                self.generator.add('')
 
     def visit_ArrayDeclNode(self, node: ArrayDeclNode):
         type = node.vars_type
@@ -204,22 +237,37 @@ class SemanticAnalyzer(NodeVisitor):
         to_ = node.to_.literal
         for ident in node.name.idents:
             arr_name = ident.name
-            arr_symb = ArraySymbol(arr_name,type,from_,to_)
-            if self.current_scope.lookup(arr_name,current_scope_only=True):
+            arr_symb = ArraySymbol(arr_name, type, from_, to_, index=self.current_scope.last_index)
+            self.current_scope.last_index += 1
+            if self.current_scope.lookup(arr_name, current_scope_only=True):
                 raise Exception(
                     "Duplicate identifier '%s' found" % arr_name
                 )
             self.current_scope.define(arr_symb)
+            definition_level = self.current_scope.get_level_scope(arr_name)
+            if definition_level == 1:
+                arr_symb.is_field = True
+                self.generator.add('.field public static {0} [{1}'.format(arr_name, self.assemblerDict[arr_symb.type.name]))
+                self.arrays_init += 'ldc {0}\n'.format(to_)
+                self.arrays_init += 'newarray int\n'
+                self.arrays_init += 'putstatic {0}/{1} [{2}\n'.format(self.global_scope.scope_name, arr_name, self.assemblerDict[arr_symb.type.name])
+            else:
+                self.generator.add('')
+
 
     def visit_ArrayIdentNode(self, node : ArrayIdentNode):
         arr_name = node.name.name
         liter = int(node.literal.literal)
-        arr_symbol : ArraySymbol = self.current_scope.lookup(arr_name)
+        arr_symbol = self.current_scope.lookup(arr_name)
+        definition_level = self.current_scope.get_level_scope(arr_name)
+        if definition_level == 1:
+            self.generator.add('getstatic {0}/{1} [{2}'.format(self.global_scope.scope_name, arr_name, self.assemblerDict[arr_symbol.type.name]))
+            self.visit(node.literal)
+            self.generator.add('{0}aload'.format(self.assemblerDict[arr_symbol.type.name].lower()))
+
         if(liter < int(arr_symbol.from_) or liter > int(arr_symbol.to_)):
             raise Exception("Out of range '%s'" % liter)
         return arr_symbol.type.name
-
-
 
     def visit_BodyNode(self, node: BodyNode):
         self.visit(node.body)
@@ -230,22 +278,35 @@ class SemanticAnalyzer(NodeVisitor):
 
     def visit_AssignNode(self, node: AssignNode):
         var = node.var
-        visit = node.val
-        type_var =None
+        val = node.val
+        type_var = None
 
-        if( isinstance(var,ArrayIdentNode) ):
+
+
+        if isinstance(var, ArrayIdentNode):
             var_name = var.name.name
-            type_var = self.visit(var)
+            # type_var = self.visit(var)
+            var_symbol = self.current_scope.lookup(var_name)
+            self.generator.add('getstatic {0}/{1} [{2}'.format(self.global_scope.scope_name, var.name,
+                                                               self.assemblerDict[var_symbol.type.name]))
+            self.visit(var.literal)
         else:
             var_name = var.name
-        var_symbol = self.current_scope.lookup(var_name)
+            var_symbol = self.current_scope.lookup(var_name)
         if var_symbol is None:
-            #raise NameError(var_name)
             raise Exception(
                 "Undefined variable '%s' found" % var_name
             )
-        type_visited = self.visit(visit)
-        if type_var is None: type_var=var_symbol.type.name
+        type_visited = self.visit(val)
+        if isinstance(var, ArrayIdentNode):
+            self.generator.add('{0}astore'.format(self.assemblerDict[var_symbol.type.name].lower()))
+        elif var_symbol.is_field:
+            self.generator.add('putstatic {0}/{1} {2}'.format(self.global_scope.scope_name, var_name, self.assemblerDict[var_symbol.type.name]))
+        else:
+            self.generator.add('{0}store_{1}'.format(self.assemblerDict[var_symbol.type.name].lower(), var_symbol.index))
+
+        if type_var is None:
+            type_var = var_symbol.type.name
         if not self.__typeChecker(type_visited, type_var):
             raise Exception(
                 "Wrong type '%s' found" % var_name
@@ -267,13 +328,23 @@ class SemanticAnalyzer(NodeVisitor):
         for param in node.params.vars_list:
             param_type = self.current_scope.lookup(param.vars_type.name)
             for param_name in param.ident_list.idents:
-                var_symbol = VarSymbol(param_name.name, param_type)
+                var_symbol = VarSymbol(param_name.name, param_type, index=self.current_scope.last_index)
+                self.current_scope.last_index += 1
                 self.current_scope.define(var_symbol)
                 proc_symbol.params.append(var_symbol)
+
+        params_sign = ''
+        for p in proc_symbol.params:
+            params_sign += self.assemblerDict[p.type.name]
+        self.generator.add('.method public static {0}({1}){2}'.format(proc_name, params_sign, 'V'))
+        self.generator.add('''.limit stack 100
+        .limit locals 100''')
 
         for stmt in node.stmt_list.body.exprs:
             self.visit(stmt)
 
+        self.generator.add('return')
+        self.generator.add('.end method')
         print(procedure_scope)
         self.current_scope = self.current_scope.enclosing_scope
         print('LEAVE scope: %s' % proc_name)
@@ -296,13 +367,26 @@ class SemanticAnalyzer(NodeVisitor):
         for param in node.params.vars_list:
             param_type = self.current_scope.lookup(param.vars_type.name)
             for param_name in param.ident_list.idents:
-                var_symbol = VarSymbol(param_name.name, param_type)
+                var_symbol = VarSymbol(param_name.name, param_type, index=self.current_scope.last_index)
+                self.current_scope.last_index += 1
                 self.current_scope.define(var_symbol)
                 func_symbol.params.append(var_symbol)
 
+        params_sign = ''
+        for p in func_symbol.params:
+            params_sign += self.assemblerDict[p.type.name]
+        self.generator.add('.method public static {0}({1}){2}'.format(func_name, params_sign,
+                                                                      self.assemblerDict[node.returning_type.name]))
+        self.generator.add('''.limit stack 100
+.limit locals 100''')
+
         for stmt in node.stmt_list.body.exprs:
             self.visit(stmt)
-
+        last_var = node.stmt_list.body.exprs[len(node.stmt_list.body.exprs)-1].var.name
+        returning_var = self.current_scope.lookup(last_var)
+        self.generator.add('{0}load_{1}'.format(self.assemblerDict[returning_var.type.name].lower(), returning_var.index))
+        self.generator.add('{0}return'.format(self.assemblerDict[node.returning_type.name].lower()))
+        self.generator.add('.end method')
         print(procedure_scope)
         self.current_scope = self.current_scope.enclosing_scope
         print('LEAVE scope: %s' % func_name)
@@ -320,33 +404,77 @@ class SemanticAnalyzer(NodeVisitor):
                 raise Exception(
                     "Wrong number of parameters specified for call to '%s' " % func_name
                 )
+        if func_name == 'WriteLn' or func_name == 'Write':
+            self.generator.add('getstatic             java/lang/System/out Ljava/io/PrintStream;')
         for param in node.params:
             self.visit(param)
+
+        if func_name == 'WriteLn' or func_name == 'Write':
+            arguments = ''
+            for p in node.params:
+                if isinstance(p, LiteralNode):
+                    arguments += self.assemblerDict[self.dictionary[type(p.value).__name__]]
+                elif isinstance(p, IdentNode):
+                    arguments += self.assemblerDict[self.current_scope.lookup(p.name).type.name]
+            self.generator.add('''invokevirtual         java/io/PrintStream/println(I)V''')
+        elif func_name == 'ReadLn' or func_name == 'Read':
+            self.generator.add('getstatic java/lang/System/in Ljava/io/InputStream;')
+            arguments = ''
+            store_instuctions = ''
+            for p in node.params:
+                symb = self.current_scope.lookup(p.name)
+                arguments += self.assemblerDict[symb.type.name]
+                if symb.is_field:
+                    store_instuctions += 'putstatic {0}/{1} {2}'.format(self.global_scope.scope_name, symb.name,
+                                                                      self.assemblerDict[symb.type.name])
+                else:
+                    store_instuctions += '{0}store_{1}'.format(
+                        self.assemblerDict[self.current_scope.lookup(p.name).type.name].lower(),
+                        self.current_scope.lookup(p.name).index)
+            self.generator.add('invokevirtual java/io/InputStream/read(){0}'.format(arguments))
+            self.generator.add(store_instuctions)
+        else:
+            params_sign = ''
+            for p in func_symbol.params:
+                params_sign += self.assemblerDict[p.type.name]
+            self.generator.add('invokestatic {0}/{1}({2}){3}'.format(self.global_scope.scope_name, func_name, params_sign,self.assemblerDict[func_symbol.type]))
         return func_symbol.type
 
     def visit_IfNode(self, node: IfNode):
         type_cond = self.visit(node.cond)
+        if_index = self.generator.last_index
+        node.jbc(self.generator, index=if_index)
         if (type_cond != 'boolean'):
             raise Exception(
                 "Wrong type of if condition '%s' " % type_cond
             )
         self.visit(node.then_stmt)
+        self.generator.add('goto endif_{}'.format(if_index))
 
+        self.generator.last_index += 1
         if node.else_stmt:
+            self.generator.add('else_{}:'.format(if_index))
             self.visit(node.else_stmt)
-
+        self.generator.add('endif_{}:'.format(if_index))
 
 
     def visit_WhileNode(self, node: WhileNode):
+        while_index = self.generator.last_index
+        self.generator.last_index += 1
+        self.generator.add('while_{}:'.format(while_index))
         type_cond = self.visit(node.cond)
-        if (type_cond != 'boolean'):
+        self.generator.add('if_icmp{0} done_{1}'.format(str(node.cond.op.name).lower(), while_index))
+        if type_cond != 'boolean':
             raise Exception(
                 "Wrong type of while condition '%s' " % type_cond
             )
         self.visit(node.stmt_list)
+        self.generator.add('goto while_{}'.format(while_index))
+        self.generator.add('done_{}:'.format(while_index))
 
     #TODO check type of node.init
     def visit_ForNode(self, node: ForNode):
+        for_index = self.generator.last_index
         type_init = self.visit(node.init)
         type_to = self.visit(node.to)
         if (type_to != 'int'):

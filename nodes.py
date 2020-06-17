@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Callable, Tuple, Optional, Union
 from enum import Enum
 import inspect
+from jasmin import *
 
 # Абстрактный класс - узел AST-дерева
 # Все рализованные далее классы узлов являются потомками этого класса
@@ -39,6 +40,9 @@ class AstNode(ABC):
     def __getitem__(self, index):
         return self.childs[index] if index < len(self.childs) else None
 
+    def jbc(self, generator: CodeGenerator, index=None):
+        pass
+
 
 class ExprNode(AstNode):
     pass
@@ -54,6 +58,18 @@ class LiteralNode(ExprNode):
     def __str__(self) -> str:
         return '{0} ({1})'.format(self.literal, type(self.value).__name__)
 
+    def jbc(self, generator: CodeGenerator):
+        #положить в стек
+        if self.literal is 'True':
+            generator.add('ldc 1')
+        elif self.literal is 'False':
+            generator.add('ldc 0')
+        elif self.literal[0] is "'":
+            #change '' to ""
+            pass
+        else:
+            generator.add('ldc {}'.format(self.literal))
+
 
 # Узел содержащий название переменной
 class IdentNode(ExprNode):
@@ -66,13 +82,15 @@ class IdentNode(ExprNode):
         return str(self.name)
 
 
+
+
 # Узел содержащий элементы массива
 class ArrayIdentNode(ExprNode):
     def __init__(self, name: IdentNode, literal: LiteralNode, row: Optional[int] = None, line: Optional[int] = None,
                  **props):
         super().__init__(row=row, line=line, **props)
-        self.name = name;
-        self.literal = literal;
+        self.name = name
+        self.literal = literal
 
     # @property
     # def childs(self) -> Tuple[IdentNode, LiteralNode]:
@@ -91,8 +109,8 @@ class BinOp(Enum):
     MOD = 'mod'
     GE = '>='
     LE = '<='
-    NEQUALS = '<>'
-    EQUALS = '='
+    NE = '<>'
+    EQ = '='
     GT = '>'
     LT = '<'
     LOGICAL_AND = 'and'
@@ -114,6 +132,24 @@ class BinOpNode(ExprNode):
     def __str__(self) -> str:
         return str(self.op.value)
 
+    def jbc(self, generator: CodeGenerator, index=None):
+        if self.op is BinOp.ADD:
+            generator.add('iadd')
+        elif self.op is BinOp.SUB:
+            generator.add('isub')
+        elif self.op is BinOp.DIVISION:
+            generator.add('idiv')
+        elif self.op is BinOp.MUL:
+            generator.add('imul')
+        elif self.op is BinOp.LOGICAL_AND:
+            generator.add('iand')
+        elif self.op is BinOp.LOGICAL_OR:
+            generator.add('ior')
+        elif self.op is BinOp.DIV:
+            generator.add('irem')
+        elif self.op is BinOp.EQ or BinOp.NE or BinOp.GT or BinOp.GE or BinOp.LE or BinOp.LT:
+            generator.add('swap')
+
 
 class StmtNode(ExprNode):
     pass
@@ -130,6 +166,7 @@ class IdentListNode(StmtNode):
 
     def __str__(self) -> str:
         return "idents"
+
 
 # Узел содержащий тип переменной или списка переменных
 class TypeSpecNode(StmtNode):
@@ -208,6 +245,10 @@ class CallNode(StmtNode):
     def __str__(self) -> str:
         return 'call'
 
+    def jbc(self, generator: CodeGenerator, index=None):
+        pass
+
+
 # Узел реализующий операцию присваивания переменной var значения val
 class AssignNode(StmtNode):
     def __init__(self, var,
@@ -224,6 +265,7 @@ class AssignNode(StmtNode):
 
     def __str__(self) -> str:
         return ':='
+
 
 # Узел реализующий условный оператор if
 # cond логическое выражение внутри if
@@ -243,6 +285,12 @@ class IfNode(StmtNode):
 
     def __str__(self) -> str:
         return 'if'
+
+    def jbc(self, generator: CodeGenerator, index=None):
+        if self.else_stmt is None:
+            generator.add('if_icmp{}'.format(str(self.cond.op.name).lower()))
+        else:
+            generator.add('if_icmp{} else_{}'.format(str(self.cond.op.name).lower(), index))
 
 # Узел реализующий цикл while
 # cond логическое выражение внутри while
@@ -359,6 +407,10 @@ class ProgramNode(ExprNode):
 
     def __str__(self) -> str:
         return 'Program'
+
+    def jbc(self, generator: CodeGenerator):
+        generator.add('.class public ' + self.prog_name.name)
+        generator.add('.super java/lang/Object')
 
 # Узел содержщий объявление процедуры
 # число параметров *args зависит от того, объявили мы процедуру с параметрами или без
