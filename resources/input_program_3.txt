@@ -1,0 +1,25 @@
+Program pr3;
+var x, y, i: integer;
+function Alpha(a,b: integer):integer;
+    var y: integer;
+begin
+a:=b+a;
+end;
+BEGIN
+x:=1;
+y:=x;
+y:=(y+45)*(1+1);
+x:=3+y-1;
+Write(y);
+y:=Alpha(3,5);
+while (y<100) do
+begin
+    Write(y);
+    y:=y+1;
+    Write(y);
+end;
+if (y>1) then
+    x:=1;
+else
+    x:=2;
+END.

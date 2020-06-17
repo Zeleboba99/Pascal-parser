@@ -1,0 +1,24 @@
+Program pr1;
+            var
+            g, b : integer;
+            d, n: array [1 .. 100] of integer;
+
+            function Alpha(a: integer):integer;
+            var y: integer;
+            begin
+            a:=a*10;
+            end;
+
+            BEGIN
+            g:=0;
+            while (g<10) do
+            begin
+                d[1]:=g;
+                Write(d[1]);
+                g:=g+1;
+            end;
+
+            g:=Alpha(4);
+            WriteLn(g);
+
+            END.

@@ -1,0 +1,21 @@
+Program pr2;
+        var
+        g, b : integer;
+        d,n: array [1 .. 100] of integer;
+
+        BEGIN
+        g:=4*4/2+2-5;
+        b:=0;
+        WriteLn(g);
+        WriteLn(b);
+        if (b>g) then
+            b:=0;
+        else
+            b:=1;
+        WriteLn(b);
+        while (b<g) do
+        begin
+            b:=b+1;
+            WriteLn(b);
+        end;
+        END.
